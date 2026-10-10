@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Am I? - History Master Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #06d6a0;
+            --secondary: #118ab2;
+            --accent: #ef476f;
+            --warning: #ffd166;
+            --glass: rgba(255, 255, 255, 0.1);
+            --panel: rgba(10, 12, 20, 0.78);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-y: auto;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(17,138,178,.25), transparent 30%),
+                radial-gradient(circle at 80% 10%, rgba(239,71,111,.18), transparent 25%),
+                radial-gradient(circle at 70% 80%, rgba(6,214,160,.18), transparent 25%),
+                linear-gradient(135deg, #0f1020, #20162f 55%, #38476b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 18px;
+        }
+        .bg-orbs::before, .bg-orbs::after {
+            content: '';
+            position: fixed;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            filter: blur(20px);
+            opacity: .35;
+            pointer-events: none;
+            animation: float 10s ease-in-out infinite;
+        }
+        .bg-orbs::before { left: -70px; top: 10%; background: #06d6a0; }
+        .bg-orbs::after { right: -80px; bottom: 12%; background: #ef476f; animation-delay: -5s; }
+        @keyframes float { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-22px) } }
+        .container {
+            width: min(920px, 96vw);
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            padding: 28px;
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 25px 60px rgba(0,0,0,.55);
+            text-align: center;
+            position: relative;
+        }
+        .topbar {
+            display: flex;
+            overflow-y: auto;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #ffd166, #06d6a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .badge, .score {
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            font-size: .9rem;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+            align-items: stretch;
+        }
+        .clue-box, .intro-card {
+            background: var(--glass);
+            padding: 22px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,.08);
+        }
+        .clue-box {
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 6px solid var(--warning);
+        }
+        .clue-text {
+            font-size: clamp(1.25rem, 2.8vw, 1.7rem);
+            line-height: 1.45;
+            font-weight: 500;
+        }
+        .portrait-wrap {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+        }
+        #image {
+            max-width: 240px;
+            max-height: 240px;
+            width: 100%;
+            border-radius: 18px;
+            display: none;
+            border: 4px solid rgba(255,255,255,.9);
+            box-shadow: 0 12px 35px rgba(0,0,0,.35);
+            animation: popIn .5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            object-fit: cover;
+            background: #111;
+        }
+        @keyframes popIn { 0% { transform: scale(.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .answer-display {
+            font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+            margin-top: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            min-height: 54px;
+            text-shadow: 0 0 15px rgba(6, 214, 160, 0.35);
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 18px;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: .92rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all .2s ease;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        button:hover:not(:disabled) { transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
+        button:disabled { background: #333 !important; color: #777; cursor: not-allowed; opacity: .5; transform: none; }
+        .btn-prev { background: #555; color: #fff; }
+        .btn-next { background: var(--primary); color: #1f1c2c; }
+        .btn-reveal { background: var(--secondary); color: #fff; }
+        .btn-skip { background: var(--accent); color: #fff; }
+        .btn-home { background: var(--warning); color: #1f1c2c; }
+        .btn-audio { background: #6c63ff; color: #fff; }
+        .intro-screen {
+            position: fixed; inset: 0;
+            background:
+                radial-gradient(circle at top, rgba(255,255,255,.08), transparent 40%),
+                linear-gradient(180deg, rgba(7,10,20,.98), rgba(12,14,28,.98));
+            display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 18px;
+        }
+        .intro-card {
+            width: min(820px, 96vw);
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,.5);
+        }
+        .intro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+        .mini {
+            padding: 14px; border-radius: 18px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.08);
+        }
+        .mini strong { color: var(--warning); }
+        .start-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+        .start-btn { padding: 16px 42px; font-size: 1.1rem; background: linear-gradient(90deg, var(--primary), #7cf7d0); color: #08111f; }
+        .small { font-size: .92rem; opacity: .85; }
+        .footer {
+            position: fixed; bottom: 0; width: 100%; left: 0;
+            background: rgba(0,0,0,.35); color: white; text-align: center; padding: 6px; font-size: 10px;
+            backdrop-filter: blur(8px);
+        }
+        @media (max-width: 820px) {
+            .intro-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-orbs"></div>
+
+<div class="intro-screen" id="introScreen">
+    <div class="intro-card">
+        <h1>Who Am I?</h1>
+        <p class="small">Can you identify these historical figures?</p>
+        <div class="intro-grid">
+            <div class="mini"><strong>1</strong><br>Read the clue.</div>
+            <div class="mini"><strong>2</strong><br>Move through clues or reveal the answer.</div>
+            <div class="mini"><strong>3</strong><br>Skip to a new historical figure anytime.</div>
+        </div>
+        <div class="small">Tip: sound works best after you press Start, because browsers often block autoplay.</div>
+        <div class="start-actions">
+            <button class="start-btn" onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="game" style="display:none;">
+    <div class="topbar">
+        <h1>Who Am I?</h1>
+    </div>
+
+    <div class="layout">
+        <div>
+            <div class="clue-box">
+                <div class="clue-text" id="clue">Press Next to begin...</div>
+            </div>
+            <div class="answer-display" id="answer"></div>
+            </div>
+            <div class="portrait-wrap">
+            <img id="image" alt="Historical Portrait">   
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-prev" id="prevBtn" onclick="changeClue(-1)">Previous</button>
+        <button class="btn-next" id="nextBtn" onclick="changeClue(1)">Next Clue</button>
+        <button class="btn-reveal" id="revealBtn" onclick="reveal()">Reveal</button>
+        <button class="btn-skip" onclick="nextPerson()">Skip / New</button>
+        <button class="btn-home" onclick="goHome()">Menu</button>
+        <button class="btn-audio" onclick="toggleAudio()">Toggle Sound</button>
+    </div>
+
+    <audio id="correctSound" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2f3f2b9e33.mp3"></audio>
+    <audio id="clickSound" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7306236aa2.mp3"></audio>
+    <audio id="startSound" preload="auto" src="https://cdn.pixabay.com/audio/2022/03/25/audio_2e65d0f4e2.mp3"></audio>
+</div>
+
+<script>
+let currentIdx = 0;
+let clueStep = 0;
+let audioOn = true;
+let roundCount = 1;
+const genericPortraits = [
+  'https://picsum.photos/id/1005/400/400',
+  'https://picsum.photos/id/1011/400/400',
+  'https://picsum.photos/id/1012/400/400',
+  'https://picsum.photos/id/1015/400/400',
+  'https://picsum.photos/id/1027/400/400',
+  'https://picsum.photos/id/1035/400/400',
+  'https://picsum.photos/id/1041/400/400',
+  'https://picsum.photos/id/1062/400/400'
+];
+const data = [
+  { clues: ["I became king at a young age and built one of the largest empires of the ancient world.", "My military campaigns stretched from Greece to Egypt and into parts of India.", "History remembers me with the title 'the Great'."], answer: "Alexander the Great" },
+  { clues: ["I was the adopted heir of a famous Roman leader who was assassinated.", "My rule marked the beginning of a long period of peace known as the Pax Romana.", "I became the first emperor of Rome."], answer: "Augustus" },
+  { clues: ["I spent my life asking difficult questions about truth, justice, and knowledge.", "My ideas were considered dangerous by the authorities in my city.", "I was sentenced to death and forced to drink poison."], answer: "Socrates" },
+  { clues: ["I wrote philosophical works that are still studied today, including one involving a cave.", "I was a student of a famous thinker who was executed.", "I later became the teacher of another great philosopher."], answer: "Plato" },
+  { clues: ["I studied many subjects including science, ethics, and politics.", "I taught a future conqueror who would go on to build a vast empire.", "My writings influenced Western thought for centuries."], answer: "Aristotle" },
+  { clues: ["I unified warring regions to form a unified empire in East Asia.", "My rule included large building projects, including defensive walls.", "My tomb is guarded by thousands of life-sized clay soldiers."], answer: "Qin Shi Huang" },
+  { clues: ["I was a powerful ruler of the Mali Empire in West Africa.", "My wealth became famous during a long journey I made to Mecca.", "I am often considered one of the richest individuals in history."], answer: "Mansa Musa", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Mansa_Musa_Catalan_Atlas.png/300px-Mansa_Musa_Catalan_Atlas.png" },
+  { clues: ["I was a Spanish explorer who conquered a powerful empire in the Americas.", "My arrival led to the fall of the Aztecs.", "I became a governor in the New World."], answer: "Hernán Cortés", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Hernan_Fernando_Cortes.jpg/300px-Hernan_Fernando_Cortes.jpg" },
+  { clues: ["I was another Spanish explorer who conquered an empire in South America.", "My expedition led to the fall of the Inca Empire.", "I founded the city of Lima."], answer: "Francisco Pizarro", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Francisco_Pizarro.jpg/300px-Francisco_Pizarro.jpg" },
+  { clues: ["I developed a theory explaining how traits are passed from parents to offspring.", "My work focused on pea plants in a monastery garden.", "I am known as the father of genetics."], answer: "Gregor Mendel", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Gregor_Mendel_2.jpg/300px-Gregor_Mendel_2.jpg" },
+  { clues: ["I was a British nurse who improved conditions in hospitals.", "My work during the Crimean War made me famous.", "I am often called the 'Lady with the Lamp'."], answer: "Florence Nightingale", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Florence_Nightingale_1858.jpg/300px-Florence_Nightingale_1858.jpg" },
+  { clues: ["I was a British leader during the Second World War.", "My speeches inspired a nation during the Blitz.", "I am famously associated with the 'V for Victory' sign."], answer: "Winston Churchill", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Sir_Winston_Churchill_1941_Photoportrait_by_Yousuf_Karsh.jpg/300px-Sir_Winston_Churchill_1941_Photoportrait_by_Yousuf_Karsh.jpg" },
+  { clues: ["I was the leader of Germany during a devastating global conflict.", "My rise to power led to the Second World War.", "I am remembered as a symbol of tyranny."], answer: "Adolf Hitler", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Adolf_Hitler_portrait_crop.jpg/300px-Adolf_Hitler_portrait_crop.jpg" },
+  { clues: ["I led the Soviet Union for many years including WWII.", "My rule involved industrialization and strict control.", "I was part of the 'Big Three' Allied leaders."], answer: "Joseph Stalin", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Joseph_Stalin_cropped.jpg/300px-Joseph_Stalin_cropped.jpg" },
+  { clues: ["I was a US president during the Great Depression and World War II.", "I introduced major economic reforms known as the New Deal.", "I am the only president elected four times."], answer: "Franklin D. Roosevelt", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/FDR_1944_Color_Portrait.jpg/300px-FDR_1944_Color_Portrait.jpg" },
+  { clues: ["I was the first woman Prime Minister of the UK.", "I was known for my strong leadership and economic shifts.", "I was often called the 'Iron Lady'."], answer: "Margaret Thatcher", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Margaret_Thatcher.png/300px-Margaret_Thatcher.png" },
+  { clues: ["I was a revolutionary leader in China.", "My ideas formed the basis of the People's Republic of China.", "My portrait remains on the gate of the Forbidden City."], answer: "Mao Zedong", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Mao_Zedong_portrait.jpg/300px-Mao_Zedong_portrait.jpg" },
+  { clues: ["I helped lead independence movements in South America.", "I fought against Spanish rule in countries like Venezuela and Peru.", "I am often called 'El Libertador'."], answer: "Simón Bolívar", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Sim%C3%B3n_Bol%C3%ADvar.jpg/300px-Sim%C3%B3n_Bol%C3%ADvar.jpg" },
+  { clues: ["I was a Russian ruler who expanded my country’s empire significantly.", "I modernised Russia and built a new capital on the Baltic Sea.", "I was known for my great height and energy."], answer: "Peter the Great", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Peter_der-Grosse_1838.jpg/300px-Peter_der-Grosse_1838.jpg" },
+  { clues: ["I ruled Russia as Empress and expanded its borders south and west.", "I supported arts, education, and Enlightenment ideas.", "I am one of the most powerful female rulers in history."], answer: "Catherine the Great", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Catharine_II_by_J.B.Lampi_%281793%2C_Hermitage%29.jpg/300px-Catharine_II_by_J.B.Lampi_%281793%2C_Hermitage%29.jpg" },
+  { clues: ["I was a British naturalist who sailed on HMS Beagle.", "My observations led to the theory of evolution by natural selection.", "I wrote 'On the Origin of Species'."], answer: "Charles Darwin", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Charles_Darwin_seated_crop.jpg/300px-Charles_Darwin_seated_crop.jpg" },
+  { clues: ["I was an American civil rights activist who spoke about equality.", "I led non-violent protests against segregation.", "I famously told the world 'I have a dream'."], answer: "Martin Luther King Jr.", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Martin_Luther_King_Jr_NYWTS.jpg/300px-Martin_Luther_King_Jr_NYWTS.jpg" },
+  { clues: ["I was the scientific director of the Manhattan Project.", "I am known as the 'father of the atomic bomb'.", "I famously quoted the Bhagavad Gita: 'I am become Death'."], answer: "J. Robert Oppenheimer", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/J.RobertOppenheimer-LosAlamos.jpg/300px-J.RobertOppenheimer-LosAlamos.jpg" },
+  { clues: ["I was an artist known for 'The Starry Night' and 'Sunflowers'.", "I only sold one painting during my lifetime.", "I am famous for my post-impressionist style and bright colors."], answer: "Vincent van Gogh", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/300px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg" },
+  { clues: ["I was a Spanish artist who helped develop Cubism.", "My work often used unusual shapes and multiple perspectives.", "I painted the famous anti-war mural 'Guernica'."], answer: "Pablo Picasso", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Pablo_picasso_1.jpg/300px-Pablo_picasso_1.jpg" },
+  { clues: ["I was a Norwegian explorer who was the first to reach the South Pole.", "I successfully led an expedition in 1911.", "I was also the first to fly over the North Pole."], answer: "Roald Amundsen", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Roald_Amundsen_Nasjonalbiblioteket.jpg/300px-Roald_Amundsen_Nasjonalbiblioteket.jpg" },
+  { clues: ["I was an American inventor known for the light bulb and phonograph.", "I had over 1,000 patents to my name.", "My lab was located in Menlo Park."], answer: "Thomas Edison", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Thomas_Edison2.jpg/300px-Thomas_Edison2.jpg" },
+  { clues: ["I was an inventor and engineer who worked with alternating current (AC).", "I once worked for Edison before becoming his rival.", "A famous electric car company is named after me."], answer: "Nikola Tesla", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Tesla_circa_1890.jpeg/300px-Tesla_circa_1890.jpeg" },
+  { clues: ["I was a French military leader who became Emperor.", "I conquered much of Europe before my defeat at Waterloo.", "I am often pictured with my hand in my waistcoat."], answer: "Napoleon Bonaparte", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg/300px-Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg" },
+  { clues: ["I was an English scientist who discovered electromagnetic induction.", "My work led to the invention of the electric motor.", "The 'Faraday cage' is named after me."], answer: "Michael Faraday", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/M_Faraday_Thos_Phillips_oil_1842.jpg/300px-M_Faraday_Thos_Phillips_oil_1842.jpg" },
+  { clues: ["I was a physicist who discovered the atomic nucleus.", "I am known as the father of nuclear physics.", "I was born in New Zealand and worked in the UK."], answer: "Ernest Rutherford", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Ernest_Rutherford.jpg/300px-Ernest_Rutherford.jpg" },
+  { clues: ["I was an Italian explorer who realized the 'New World' was a continent.", "My name was used by mapmakers to name the Americas.", "I sailed under the flag of Spain and Portugal."], answer: "Amerigo Vespucci", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Amerigo_Vespucci.jpg/300px-Amerigo_Vespucci.jpg" },
+  { clues: ["I was a French scientist who developed the process of pasteurization.", "I created the first vaccines for rabies and anthrax.", "I proved that germs cause disease."], answer: "Louis Pasteur", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Louis_Pasteur%2C_by_Albert_Edelfelt.jpg/300px-Louis_Pasteur%2C_by_Albert_Edelfelt.jpg" },
+ { clues: ["I became king at a young age and built one of the largest empires of the ancient world.", "My military campaigns stretched from Greece to Egypt and into parts of India.", "History remembers me with the title 'the Great'."], answer: "Alexander the Great" },
+  { clues: ["I was the adopted heir of a famous Roman leader who was assassinated.", "My rule marked the beginning of a long period of peace known as the Pax Romana.", "I became the first emperor of Rome."], answer: "Augustus" },
+  { clues: ["I spent my life asking difficult questions about truth, justice, and knowledge.", "My ideas were considered dangerous by the authorities in my city.", "I was sentenced to death and forced to drink poison."], answer: "Socrates" },
+  { clues: ["I wrote philosophical works that are still studied today, including one involving a cave.", "I was a student of a famous thinker who was executed.", "I later became the teacher of another great philosopher."], answer: "Plato" },
+  { clues: ["I studied many subjects including science, ethics, and politics.", "I taught a future conqueror who would go on to build a vast empire.", "My writings influenced Western thought for centuries."], answer: "Aristotle" },
+  { clues: ["I unified warring regions to form a unified empire in East Asia.", "My rule included large building projects, including defensive walls.", "My tomb is guarded by thousands of life-sized clay soldiers."], answer: "Qin Shi Huang" },
+  { clues: ["I was a powerful ruler of the Mali Empire in West Africa.", "My wealth became famous during a long journey I made to Mecca.", "I am often considered one of the richest individuals in history."], answer: "Mansa Musa", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Mansa_Musa_Catalan_Atlas.png/300px-Mansa_Musa_Catalan_Atlas.png" },
+  { clues: ["I was a Spanish explorer who conquered a powerful empire in the Americas.", "My arrival led to the fall of the Aztecs.", "I became a governor in the New World."], answer: "Hernán Cortés", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Hernan_Fernando_Cortes.jpg/300px-Hernan_Fernando_Cortes.jpg" },
+  { clues: ["I was another Spanish explorer who conquered an empire in South America.", "My expedition led to the fall of the Inca Empire.", "I founded the city of Lima."], answer: "Francisco Pizarro", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Francisco_Pizarro.jpg/300px-Francisco_Pizarro.jpg" },
+  { clues: ["I developed a theory explaining how traits are passed from parents to offspring.", "My work focused on pea plants in a monastery garden.", "I am known as the father of genetics."], answer: "Gregor Mendel", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Gregor_Mendel_2.jpg/300px-Gregor_Mendel_2.jpg" },
+  { clues: ["I was an Italian physician and educator who revolutionized early childhood learning.", "My educational method is used in thousands of schools around the world today.", "I was the first woman to graduate from the University of Rome La Sapienza medical school."], answer: "Maria Montessori", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Maria_Montessori1913.jpg/300px-Maria_Montessori1913.jpg" },
+  { clues: ["I was a physicist and astronomer often called the 'father of modern science'.", "I improved the telescope and supported the idea that the Earth moves around the Sun.", "I spent my final years under house arrest by the Roman Inquisition."], answer: "Galileo Galilei", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Justus_Sustermans_-_Portrait_of_Galileo_Galilei%2C_1636.jpg/300px-Justus_Sustermans_-_Portrait_of_Galileo_Galilei%2C_1636.jpg" },
+  { clues: ["I was the leader of Germany during a devastating global conflict.", "My rise to power led to the Second World War.", "I am remembered as a symbol of tyranny."], answer: "Adolf Hitler", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Adolf_Hitler_portrait_crop.jpg/300px-Adolf_Hitler_portrait_crop.jpg" },
+  { clues: ["I led the Soviet Union for many years including WWII.", "My rule involved industrialization and strict control.", "I was part of the 'Big Three' Allied leaders."], answer: "Joseph Stalin", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Joseph_Stalin_cropped.jpg/300px-Joseph_Stalin_cropped.jpg" },
+  { clues: ["I was a US president during the Great Depression and World War II.", "I introduced major economic reforms known as the New Deal.", "I am the only president elected four times."], answer: "Franklin D. Roosevelt", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/FDR_1944_Color_Portrait.jpg/300px-FDR_1944_Color_Portrait.jpg" },
+  { clues: ["I was an Italian general and patriot who helped unify my country.", "I am known as the 'Hero of Two Worlds' because of my military campaigns in South America and Europe.", "I led a volunteer army known as the 'Redshirts'."], answer: "Giuseppe Garibaldi", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Giuseppe_Garibaldi_%281866%29.jpg/300px-Giuseppe_Garibaldi_%281866%29.jpg" },
+  { clues: ["I was a revolutionary leader in China.", "My ideas formed the basis of the People's Republic of China.", "My portrait remains on the gate of the Forbidden City."], answer: "Mao Zedong", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/88/Mao_Zedong_portrait.jpg/300px-Mao_Zedong_portrait.jpg" },
+  { clues: ["I helped lead independence movements in South America.", "I fought against Spanish rule in countries like Venezuela and Peru.", "I am often called 'El Libertador'."], answer: "Simón Bolívar", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Sim%C3%B3n_Bol%C3%ADvar.jpg/300px-Sim%C3%B3n_Bol%C3%ADvar.jpg" },
+  { clues: ["I was a Russian ruler who expanded my country’s empire significantly.", "I modernised Russia and built a new capital on the Baltic Sea.", "I was known for my great height and energy."], answer: "Peter the Great", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Peter_der-Grosse_1838.jpg/300px-Peter_der-Grosse_1838.jpg" },
+  { clues: ["I ruled Russia as Empress and expanded its borders south and west.", "I supported arts, education, and Enlightenment ideas.", "I am one of the most powerful female rulers in history."], answer: "Catherine the Great", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Catharine_II_by_J.B.Lampi_%281793%2C_Hermitage%29.jpg/300px-Catharine_II_by_J.B.Lampi_%281793%2C_Hermitage%29.jpg" },
+  { clues: ["I was a Polish-French scientist who pioneered research on radioactivity.", "I am the only person to win Nobel Prizes in two different scientific fields.", "I discovered the elements polonium and radium."], answer: "Marie Curie", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Marie_Curie_c1900.jpg/300px-Marie_Curie_c1900.jpg" },
+  { clues: ["I was an American civil rights activist who spoke about equality.", "I led non-violent protests against segregation.", "I famously told the world 'I have a dream'."], answer: "Martin Luther King Jr.", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Martin_Luther_King_Jr_NYWTS.jpg/300px-Martin_Luther_King_Jr_NYWTS.jpg" },
+  { clues: ["I was the scientific director of the Manhattan Project.", "I am known as the 'father of the atomic bomb'.", "I famously quoted the Bhagavad Gita: 'I am become Death'."], answer: "J. Robert Oppenheimer", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/J.RobertOppenheimer-LosAlamos.jpg/300px-J.RobertOppenheimer-LosAlamos.jpg" },
+  { clues: ["I was an artist known for 'The Starry Night' and 'Sunflowers'.", "I only sold one painting during my lifetime.", "I am famous for my post-impressionist style and bright colors."], answer: "Vincent van Gogh", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/300px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg" },
+  { clues: ["I was a Spanish artist who helped develop Cubism.", "My work often used unusual shapes and multiple perspectives.", "I painted the famous anti-war mural 'Guernica'."], answer: "Pablo Picasso", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Pablo_picasso_1.jpg/300px-Pablo_picasso_1.jpg" },
+  { clues: ["I was a Norwegian explorer who was the first to reach the South Pole.", "I successfully led an expedition in 1911.", "I was also the first to fly over the North Pole."], answer: "Roald Amundsen", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Roald_Amundsen_Nasjonalbiblioteket.jpg/300px-Roald_Amundsen_Nasjonalbiblioteket.jpg" },
+  { clues: ["I was an Italian Polymath of the High Renaissance.", "I painted the 'Mona Lisa' and 'The Last Supper'.", "I filled notebooks with drawings of flying machines and human anatomy."], answer: "Leonardo da Vinci", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Leonardo_self_portrait.jpg/300px-Leonardo_self_portrait.jpg" },
+  { clues: ["I was an Italian inventor and electrical engineer.", "I developed the first practical radio communication system.", "I shared the 1909 Nobel Prize in Physics for my work on wireless telegraphy."], answer: "Guglielmo Marconi", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Marconi.jpg/300px-Marconi.jpg" },
+  { clues: ["I was a French military leader who became Emperor.", "I conquered much of Europe before my defeat at Waterloo.", "I am often pictured with my hand in my waistcoat."], answer: "Napoleon Bonaparte", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg/300px-Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg" },
+  { clues: ["I was an Italian Renaissance sculptor, painter, and architect.", "I sculpted the 'David' and painted the ceiling of the Sistine Chapel.", "I designed the dome of St. Peter's Basilica."], answer: "Michelangelo", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Blaise_Castiglione_Michelangelo.jpg/300px-Blaise_Castiglione_Michelangelo.jpg" },
+  { clues: ["I was an Italian physicist known as the 'architect of the nuclear age'.", "I created the world's first nuclear reactor in Chicago.", "I won the Nobel Prize in Physics in 1938 before moving to the US."], answer: "Enrico Fermi", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Enrico_Fermi_1943-49.jpg/300px-Enrico_Fermi_1943-49.jpg" },
+  { clues: ["I was an Italian explorer who realized the 'New World' was a continent.", "My name was used by mapmakers to name the Americas.", "I sailed under the flag of Spain and Portugal."], answer: "Amerigo Vespucci", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Amerigo_Vespucci.jpg/300px-Amerigo_Vespucci.jpg" },
+  { clues: ["I was a French scientist who developed the process of pasteurization.", "I created the first vaccines for rabies and anthrax.", "I proved that germs cause disease."], answer: "Louis Pasteur", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Louis_Pasteur%2C_by_Albert_Edelfelt.jpg/300px-Louis_Pasteur%2C_by_Albert_Edelfelt.jpg" },
+  { clues: ["I was an Italian poet whose work 'The Divine Comedy' is a masterpiece of world literature.", "My work helped establish the Tuscan dialect as the standard Italian language.", "I am often called the 'Supreme Poet'."], answer: "Dante Alighieri", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Dante_Alighieri_by_Sandro_Botticelli_c._1495.jpg/300px-Dante_Alighieri_by_Sandro_Botticelli_c._1495.jpg" },
+  { clues: ["I was the last Queen of France before the Revolution.", "I am often (incorrectly) associated with the phrase 'Let them eat cake'.", "I was executed by guillotine in 1793."], answer: "Marie Antoinette", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Marie-Antoinette%3B_koningin_der_Fransen.jpg/300px-Marie-Antoinette%3B_koningin_der_Fransen.jpg" },
+  { clues: ["I was a German-born theoretical physicist who developed the theory of relativity.", "My equation E=mc² is the most famous in the world.", "I won the Nobel Prize for my explanation of the photoelectric effect."], answer: "Albert Einstein", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Einstein_Head.jpg/300px-Albert_Einstein_Head.jpg" },
+  { clues: ["I was an Italian composer known for operas like 'La Traviata' and 'Aida'.", "My music became a symbol of the Italian unification (Risorgimento).", "I am one of the most influential composers of the 19th century."], answer: "Giuseppe Verdi", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Giuseppe_Verdi_by_Giovanni_Boldini.jpg/300px-Giuseppe_Verdi_by_Giovanni_Boldini.jpg" },
+  { clues: ["I was an Italian astronomer who discovered the four largest moons of Jupiter.", "I was a pioneer of the scientific method and experimental physics.", "I was famously forced to recant my views by the Church."], answer: "Galileo Galilei" },
+  { clues: ["I was a Greek mathematician who shouted 'Eureka!' in a bathtub.", "I calculated the value of pi and invented the screw pump.", "I famously said: 'Give me a lever long enough... and I shall move the world'."], answer: "Archimedes", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Domenico-Fetti_Archimedes_1620.jpg/300px-Domenico-Fetti_Archimedes_1620.jpg" },
+  { clues: ["I was a Roman Emperor who built a famous wall across northern Britain.", "I was one of the 'Five Good Emperors'.", "I spent much of my reign traveling the empire."], answer: "Hadrian", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Head_Hadrian_Musei_Capitolini_MC817.jpg/300px-Head_Hadrian_Musei_Capitolini_MC817.jpg" },
+  { clues: ["I was the first Chancellor of a unified Germany.", "I was known as the 'Iron Chancellor'.", "My political strategy was called 'Realpolitik'."], answer: "Otto von Bismarck", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Otto_von_Bismarck_1890.jpg/300px-Otto_von_Bismarck_1890.jpg" },
+  { clues: ["I was an Italian composer of the late Romantic era known for 'La Bohème' and 'Tosca'.", "My style of opera is known as 'verismo' (realism).", "I am considered the successor to Giuseppe Verdi."], answer: "Giacomo Puccini", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/GiacomoPuccini.jpg/300px-GiacomoPuccini.jpg" },
+  { clues: ["I was the physicist who discovered radioactivity in uranium.", "I shared a Nobel Prize with Marie and Pierre Curie.", "The SI unit for radioactivity is named after me."], answer: "Henri Becquerel", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Antoine_Henri_Becquerel.jpg/300px-Antoine_Henri_Becquerel.jpg" },
+  { clues: ["I was a German composer who bridged the gap between the Classical and Romantic eras.", "I continued to compose music even after becoming completely deaf.", "I wrote the 'Ode to Joy' which is now the anthem of the European Union."], answer: "Ludwig van Beethoven", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Beethoven.jpg/300px-Beethoven.jpg" },
+  { clues: ["I was a Venetian merchant who traveled to the court of Kublai Khan.", "My book 'The Travels of...' inspired Christopher Columbus.", "I introduced many Chinese inventions to Europe."], answer: "Marco Polo", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Maerco_Polo.jpg/300px-Maerco_Polo.jpg" },
+  { clues: ["I was a Russian chemist who created the Periodic Table of Elements.", "I predicted the properties of elements that hadn't been discovered yet.", "I allegedly had a dream that showed me the arrangement of elements."], answer: "Dmitri Mendeleev", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Dmitri_Mendeleev_1890.jpg/300px-Dmitri_Mendeleev_1890.jpg" },
+  { clues: ["I wrote 'The Social Contract' and influenced the French Revolution.", "I believed that people are born free but are everywhere in chains.", "I was a major figure of the Enlightenment."], answer: "Jean-Jacques Rousseau", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Jean-Jacques_Rousseau_%28painted_portrait%29.jpg/300px-Jean-Jacques_Rousseau_%28painted_portrait%29.jpg" },
+  { clues: ["I was a Roman general who became dictator for life.", "My rise to power led to the end of the Roman Republic.", "I was assassinated by a group that included my friend Brutus."], answer: "Julius Caesar" },
+  { clues: ["I ruled Egypt during a time of strong connections with Rome.", "My relationships with powerful Roman leaders helped shape my reign.", "My death is often associated with a snake."], answer: "Cleopatra" },
+  { clues: ["I was an Irish chemist who defined the relationship between gas pressure and volume.", "I am often called the first modern chemist.", "I wrote 'The Sceptical Chymist'."], answer: "Robert Boyle", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Robert_Boyle_0001.jpg/300px-Robert_Boyle_0001.jpg" },
+  { clues: ["I was the last Queen of France before the Revolution.", "I am often (incorrectly) associated with the phrase 'Let them eat cake'.", "I was executed by guillotine in 1793."], answer: "Marie Antoinette", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Marie-Antoinette%3B_koningin_der_Fransen.jpg/300px-Marie-Antoinette%3B_koningin_der_Fransen.jpg" },
+  { clues: ["I was a Scottish scientist who formulated the theory of electromagnetism.", "My equations unified electricity, magnetism, and light.", "Einstein kept a photo of me on his wall."], answer: "James Clerk Maxwell", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/James_Clerk_Maxwell.png/300px-James_Clerk_Maxwell.png" },
+  { clues: ["I am credited with inventing the first practical telephone.", "I co-founded the American Telephone and Telegraph Company (AT&T).", "My first words on the phone were to my assistant, Mr. Watson."], answer: "Alexander Graham Bell", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Alexander_Graham_Bell.jpg/300px-Alexander_Graham_Bell.jpg" },
+  { clues: ["I co-discovered natural selection independently of Charles Darwin.", "I did extensive fieldwork in the Amazon and Malay Archipelago.", "I am known as the 'father of biogeography'."], answer: "Alfred Russel Wallace", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Alfred-Russel-Wallace-c1895.jpg/300px-Alfred-Russel-Wallace-c1895.jpg" },
+  { clues: ["I was a Greek mathematician who shouted 'Eureka!' in a bathtub.", "I calculated the value of pi and invented the screw pump.", "I famously said: 'Give me a lever long enough... and I shall move the world'."], answer: "Archimedes", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Domenico-Fetti_Archimedes_1620.jpg/300px-Domenico-Fetti_Archimedes_1620.jpg" },
+  { clues: ["I was a Roman Emperor who built a famous wall across northern Britain.", "I was one of the 'Five Good Emperors'.", "I spent much of my reign traveling the empire."], answer: "Hadrian", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Head_Hadrian_Musei_Capitolini_MC817.jpg/300px-Head_Hadrian_Musei_Capitolini_MC817.jpg" },
+  { clues: ["I was the first Chancellor of a unified Germany.", "I was known as the 'Iron Chancellor'.", "My political strategy was called 'Realpolitik'."], answer: "Otto von Bismarck", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Otto_von_Bismarck_1890.jpg/300px-Otto_von_Bismarck_1890.jpg" },
+  { clues: ["I was an English explorer and poet who founded the Roanoke colony.", "I popularized tobacco in England.", "I was a favorite of Queen Elizabeth I."], answer: "Sir Walter Raleigh", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Sir_Walter_Raleigh_by_Nicholas_Hilliard.jpg/300px-Sir_Walter_Raleigh_by_Nicholas_Hilliard.jpg" },
+  { clues: ["I was the physicist who discovered radioactivity in uranium.", "I shared a Nobel Prize with Marie and Pierre Curie.", "The SI unit for radioactivity is named after me."], answer: "Henri Becquerel", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Antoine_Henri_Becquerel.jpg/300px-Antoine_Henri_Becquerel.jpg" },
+  { clues: ["I was a US President known for the 'Big Stick' policy.", "I was a leader of the 'Rough Riders' and a conservationist.", "My face is on Mount Rushmore."], answer: "Theodore Roosevelt", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Theodore_Roosevelt_by_John_Singer_Sargent%2C_1903.jpg/300px-Theodore_Roosevelt_by_John_Singer_Sargent%2C_1903.jpg" },
+  { clues: ["I was a Venetian merchant who traveled to the court of Kublai Khan.", "My book 'The Travels of...' inspired Christopher Columbus.", "I introduced many Chinese inventions to Europe."], answer: "Marco Polo", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Maerco_Polo.jpg/300px-Maerco_Polo.jpg" },
+  { clues: ["I was a Russian chemist who created the Periodic Table of Elements.", "I predicted the properties of elements that hadn't been discovered yet.", "I allegedly had a dream that showed me the arrangement of elements."], answer: "Dmitri Mendeleev", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Dmitri_Mendeleev_1890.jpg/300px-Dmitri_Mendeleev_1890.jpg" },
+  { clues: ["I wrote 'The Social Contract' and influenced the French Revolution.", "I believed that people are born free but are everywhere in chains.", "I was a major figure of the Enlightenment."], answer: "Jean-Jacques Rousseau", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Jean-Jacques_Rousseau_%28painted_portrait%29.jpg/300px-Jean-Jacques_Rousseau_%28painted_portrait%29.jpg" },
+  { clues: ["I was a Roman general who became dictator for life.", "My rise to power led to the end of the Roman Republic.", "I was assassinated by a group that included my friend Brutus."], answer: "Julius Caesar" },
+  { clues: ["I ruled Egypt during a time of strong connections with Rome.", "My relationships with powerful Roman leaders helped shape my reign.", "My death is often associated with a snake."], answer: "Cleopatra" },
+  { clues: ["I led Carthaginian forces against Rome.", "My army famously crossed a mountain range with elephants.", "I am remembered as one of Rome’s greatest enemies."], answer: "Hannibal" },
+  { clues: ["I was an early Christian leader who became emperor of Rome.", "My rule marked a major shift in religious policy.", "I founded a city that would become Constantinople."], answer: "Constantine the Great" }
+];
+function portraitForIndex(idx){ return genericPortraits[idx % genericPortraits.length]; }
+function playSound(id){ if(!audioOn) return; const sfx = document.getElementById(id); if(!sfx) return; sfx.currentTime = 0; sfx.play().catch(()=>{}); }
+function updateProgress(){ const currentData = data[currentIdx]; document.getElementById('roundLabel').innerText = `Round ${roundCount}`; document.getElementById('progressText').innerText = `Clue ${clueStep + 1} of ${currentData.clues.length}`; document.getElementById('progressBar').style.width = `${((clueStep + 1) / currentData.clues.length) * 100}%`; }
+function updateDisplay(){ const currentData = data[currentIdx]; document.getElementById('clue').innerText = currentData.clues[clueStep]; document.getElementById('prevBtn').disabled = (clueStep === 0); document.getElementById('nextBtn').disabled = (clueStep === currentData.clues.length - 1); updateProgress(); }
+function startGame(){ document.getElementById('introScreen').style.display = 'none'; document.getElementById('game').style.display = 'block'; playSound('startSound'); nextPerson(); }
+function changeClue(direction){ playSound('clickSound'); clueStep = Math.max(0, Math.min(clueStep + direction, data[currentIdx].clues.length - 1)); updateDisplay(); }
+function reveal(){ const currentData = data[currentIdx]; document.getElementById('answer').innerText = currentData.answer; const img = document.getElementById('image'); img.src = portraitForIndex(currentIdx); img.style.display = 'block'; playSound('correctSound'); document.getElementById('nextBtn').disabled = true; document.getElementById('revealBtn').disabled = true; }
+function nextPerson(){ playSound('clickSound'); currentIdx = Math.floor(Math.random() * data.length); clueStep = 0; roundCount += 1; document.getElementById('answer').innerText = ''; const img = document.getElementById('image'); img.style.display = 'none'; img.src = ''; document.getElementById('revealBtn').disabled = false; document.getElementById('nextBtn').disabled = false; updateDisplay(); }
+function goHome(){ location.reload(); }
+function toggleAudio(){ audioOn = !audioOn; document.getElementById('audioState').innerText = audioOn ? 'on' : 'off'; }
+</script>
+<footer class="footer">
+<p>
+  © 2026 James Wynne - 
+  <a href="mailto:jiwynne72@gmail.com" style="color:#06d6a0;">email</a> - 
+  <a href="https://jwynne.wixsite.com/english" style="color:#06d6a0;" target="_blank">website</a>
+</p>
+</footer>
+</body>
+</html>

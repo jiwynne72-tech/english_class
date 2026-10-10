@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WHAT HAPPENED HERE??</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-green: #10b981;
+            --accent-gold: #f59e0b;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Dynamic Background Glows */
+        body.home { background: radial-gradient(circle at top right, #1e293b, #0f172a); }
+        body.level1 { background: radial-gradient(circle at top right, #064e3b, #0f172a); }
+        body.level2 { background: radial-gradient(circle at top right, #78350f, #0f172a); }
+        body.level3 { background: radial-gradient(circle at top right, #7f1d1d, #0f172a); }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            padding: 40px 0;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            letter-spacing: -0.025em;
+            margin-bottom: 2rem;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        button {
+            margin: 10px;
+            padding: 16px 28px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        button:active { transform: scale(0.96); }
+
+        /* Level Buttons */
+        .level-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 80%;
+        }
+
+        .level-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: var(--accent-green);
+            color: white;
+            width: 100%;
+            margin-top: 25px;
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+        }
+
+        .next-btn {
+            background: var(--accent-gold);
+            color: #000;
+            width: 100%;
+            display: none; /* Shown after resolve */
+        }
+
+        .home-btn {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-decoration: underline;
+        }
+
+        .sentence {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 30px 0;
+            line-height: 1.2;
+        }
+
+        .answer {
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid var(--accent-green);
+            display: none;
+            text-align: left;
+            font-size: 1.1rem;
+            color: #d1d5db;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+       .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0; /* Ensures it starts at the very edge */
+    width: 100%;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 15px 0; /* Vertical padding only to prevent width issues */
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    text-align: center; /* Forces the text to the middle */
+    z-index: 100; /* Keeps it above background glows */
+}
+    </style>
+</head>
+<body class="home">
+
+<div class="container" id="app"></div>
+
+<audio id="soundReveal" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=correct-2-46134.mp3" type="audio/mpeg">
+</audio>
+<audio id="soundNext" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3d4b0cb1c7.mp3?filename=click-124467.mp3" type="audio/mpeg">
+</audio>
+<audio id="soundHover" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// Data remains the same as your original provided source
+const data = {
+1: [
+{sentence:"She go to work every day.",answer:"❌ go → ✅ goes<br><br>3rd person singular needs -s."},
+{sentence:"He don't understand.",answer:"❌ don't → ✅ doesn't<br><br>Use 'doesn't' for he/she/it."},
+{sentence:"I am agree with you.",answer:"❌ am agree → ✅ agree<br><br>'Agree' is a verb."},
+{sentence:"She have a car.",answer:"❌ have → ✅ has<br><br>3rd person singular."},
+{sentence:"We was happy.",answer:"❌ was → ✅ were<br><br>'We' uses 'were'."},
+{sentence:"He go yesterday.",answer:"❌ go → ✅ went<br><br>Past simple needed."},
+{sentence:"I goed home.",answer:"❌ goed → ✅ went<br><br>Irregular verb."},
+{sentence:"She don't likes coffee.",answer:"❌ don't likes → ✅ doesn't like<br><br>No -s after 'doesn't'."},
+{sentence:"They is here.",answer:"❌ is → ✅ are<br><br>Plural subject."},
+{sentence:"I am having 30 years.",answer:"❌ am having → ✅ am 30<br><br>No 'have' for age."},
+{sentence:"He can to swim.",answer:"❌ can to → ✅ can swim<br><br>No 'to' after modal."},
+{sentence:"I very like pizza.",answer:"❌ very like → ✅ really like<br><br>Use 'really' with verbs."},
+{sentence:"She no understand.",answer:"❌ no understand → ✅ doesn't understand"},
+{sentence:"We did a party.",answer:"❌ did → ✅ had<br><br>'Have a party'"},
+{sentence:"I make a photo.",answer:"❌ make → ✅ take<br><br>'Take a photo'"},
+{sentence:"He say me hello.",answer:"❌ say me → ✅ said to me"},
+{sentence:"She tell me that.",answer:"❌ tell → ✅ told<br><br>Past tense needed."},
+{sentence:"I am boring.",answer:"❌ boring → ✅ bored<br><br>Feeling vs thing"},
+{sentence:"This is more easy.",answer:"❌ more easy → ✅ easier"},
+{sentence:"She go to home.",answer:"❌ to home → ✅ home<br><br>No 'to'."},
+{sentence:"I didn't went.",answer:"❌ went → ✅ go<br><br>Use base form"},
+{sentence:"He don't can swim.",answer:"❌ don't can → ✅ can't"},
+{sentence:"She study English yesterday.",answer:"❌ study → ✅ studied"},
+{sentence:"I am here since two hours.",answer:"❌ since → ✅ for"},
+{sentence:"We see him last week.",answer:"❌ see → ✅ saw"},
+{sentence:"He don't like it.",answer:"❌ don't → ✅ doesn't"},
+{sentence:"She can sings.",answer:"❌ sings → ✅ sing"},
+{sentence:"I didn't saw it.",answer:"❌ saw → ✅ see"},
+{sentence:"He play football yesterday.",answer:"❌ play → ✅ played"},
+{sentence:"I am interesting in it.",answer:"❌ interesting → ✅ interested"},
+{sentence:"She do her homework.",answer:"❌ do → ✅ does"},
+{sentence:"He don't works.",answer:"❌ don't works → ✅ doesn't work"},
+{sentence:"We was late.",answer:"❌ was → ✅ were"},
+{sentence:"She go always there.",answer:"❌ go always → ✅ always goes"},
+{sentence:"I am agree.",answer:"❌ am agree → ✅ agree"},
+{sentence:"He have finished.",answer:"❌ have → ✅ has"},
+{sentence:"They doesn't know.",answer:"❌ doesn't → ✅ don't"},
+{sentence:"I am here from two hours.",answer:"❌ from → ✅ for"},
+{sentence:"She didn't went there.",answer:"❌ went → ✅ go"},
+{sentence:"We was watching TV.",answer:"❌ was → ✅ were"},
+{sentence:"He didn't ate.",answer:"❌ ate → ✅ eat"},
+{sentence:"I have 25 years.",answer:"❌ have → ✅ am"},
+{sentence:"She say that yesterday.",answer:"❌ say → ✅ said"},
+{sentence:"I am go to work.",answer:"❌ am go → ✅ am going"},
+{sentence:"He not like it.",answer:"❌ not like → ✅ doesn't like"},
+{sentence:"We didn't understood.",answer:"❌ understood → ✅ understand"},
+{sentence:"She don't went.",answer:"❌ went → ✅ go"},
+{sentence:"I am here since Monday.",answer:"❌ am here → ✅ have been here"},
+{sentence:"He don't has a car.",answer:"❌ has → ✅ have"},
+{sentence:"They was happy.",answer:"❌ was → ✅ were"}
+],
+2: [
+{sentence:"I have seen him yesterday.",answer:"❌ present perfect + past time<br><br>✅ I saw him yesterday."},
+{sentence:"She suggested me to go.",answer:"❌ structure<br><br>✅ suggested going"},
+{sentence:"If I will see him, I will tell him.",answer:"❌ will after if<br><br>✅ If I see him"},
+{sentence:"I am used to work here.",answer:"❌ used to work → ✅ used to working"},
+{sentence:"He explained me the problem.",answer:"❌ explained me → ✅ explained to me"},
+{sentence:"I look forward to see you.",answer:"❌ see → ✅ seeing"},
+{sentence:"She has done a mistake.",answer:"❌ done → ✅ made"},
+{sentence:"I am agree with that.",answer:"❌ am agree → ✅ agree"},
+{sentence:"He denied to do it.",answer:"❌ to do → ✅ doing"},
+{sentence:"I have been knowing him for years.",answer:"❌ been knowing → ✅ known"},
+{sentence:"She told me that she will come.",answer:"❌ will → ✅ would"},
+{sentence:"I didn’t used to like it.",answer:"❌ used → ✅ use"},
+{sentence:"He is married with her.",answer:"❌ with → ✅ to"},
+{sentence:"I am boring of this.",answer:"❌ boring → ✅ bored"},
+{sentence:"She insisted to go.",answer:"❌ to go → ✅ on going"},
+{sentence:"I am here since 3 years.",answer:"❌ since → ✅ for"},
+{sentence:"He has 30 years.",answer:"❌ has → ✅ is"},
+{sentence:"She asked me where was I.",answer:"❌ was I → ✅ I was"},
+{sentence:"I wish I would know.",answer:"❌ would know → ✅ knew"},
+{sentence:"He suggested to go.",answer:"❌ to go → ✅ going"},
+{sentence:"I am used to wake up early.",answer:"❌ wake → ✅ waking"},
+{sentence:"He said me that.",answer:"❌ said me → ✅ told me"},
+{sentence:"I didn’t went.",answer:"❌ went → ✅ go"},
+{sentence:"She is responsible of the project.",answer:"❌ of → ✅ for"},
+{sentence:"I have less money than you.",answer:"❌ less → ✅ fewer"},
+{sentence:"He accused me to steal.",answer:"❌ to steal → ✅ of stealing"},
+{sentence:"She explained me everything.",answer:"❌ explained me → ✅ explained to me"},
+{sentence:"I prefer coffee than tea.",answer:"❌ than → ✅ to"},
+{sentence:"He made me to do it.",answer:"❌ to do → ✅ do"},
+{sentence:"I am interesting in art.",answer:"❌ interesting → ✅ interested"},
+{sentence:"She didn’t knew.",answer:"❌ knew → ✅ know"},
+{sentence:"I have a big experience.",answer:"❌ a big experience → ✅ a lot of experience"},
+{sentence:"He has done a decision.",answer:"❌ done → ✅ made"},
+{sentence:"I am agree.",answer:"❌ am agree → ✅ agree"},
+{sentence:"She depends of him.",answer:"❌ of → ✅ on"},
+{sentence:"I am married with him.",answer:"❌ with → ✅ to"},
+{sentence:"He insisted to come.",answer:"❌ to come → ✅ on coming"},
+{sentence:"I look forward to meet you.",answer:"❌ meet → ✅ meeting"},
+{sentence:"She is afraid from dogs.",answer:"❌ from → ✅ of"},
+{sentence:"He is good in maths.",answer:"❌ in → ✅ at"},
+{sentence:"I am here since Monday.",answer:"❌ am → ✅ have been"},
+{sentence:"She didn’t told me.",answer:"❌ told → ✅ tell"},
+{sentence:"I enjoy to swim.",answer:"❌ to swim → ✅ swimming"},
+{sentence:"He let me to go.",answer:"❌ to go → ✅ go"},
+{sentence:"She suggested me going.",answer:"❌ me going → ✅ that I go"},
+{sentence:"I stopped to smoke.",answer:"❌ to smoke → ✅ smoking"},
+{sentence:"He avoided to answer.",answer:"❌ to answer → ✅ answering"},
+{sentence:"I regret to say that yesterday.",answer:"❌ to say → ✅ saying"},
+{sentence:"She managed to finishing.",answer:"❌ finishing → ✅ finish"},
+{sentence:"I remember to lock the door yesterday.",answer:"❌ to lock → ✅ locking"}
+],
+3: [
+{sentence:"Had I knew, I would have acted.",answer:"❌ knew → ✅ known"},
+{sentence:"Not only he was late, but also forgot.",answer:"❌ inversion<br><br>✅ Not only was he late"},
+{sentence:"The more you study, the more better you become.",answer:"❌ more better → ✅ better"},
+{sentence:"It is high time we leave.",answer:"❌ leave → ✅ left"},
+{sentence:"I would rather you go now.",answer:"❌ go → ✅ went"},
+{sentence:"He behaves as if he is the boss.",answer:"❌ is → ✅ were"},
+{sentence:"No sooner I had arrived than he left.",answer:"❌ I had → ✅ had I"},
+{sentence:"Only after he arrived I understood.",answer:"❌ I understood → ✅ did I understand"},
+{sentence:"Scarcely I had sat when...",answer:"❌ I had → ✅ had I"},
+{sentence:"Hardly he had begun when...",answer:"❌ he had → ✅ had he"},
+{sentence:"I wish I would have known.",answer:"❌ would have → ✅ had"},
+{sentence:"If I would have seen him...",answer:"❌ would have → ✅ had"},
+{sentence:"He denied to have done it.",answer:"❌ to have done → ✅ having done"},
+{sentence:"Despite of the rain, we went.",answer:"❌ despite of → ✅ despite"},
+{sentence:"In spite the rain...",answer:"❌ spite → ✅ of"},
+{sentence:"He is one of the people who is late.",answer:"❌ is → ✅ are"},
+{sentence:"Neither of them are ready.",answer:"❌ are → ✅ is"},
+{sentence:"A number of people is here.",answer:"❌ is → ✅ are"},
+{sentence:"The number of people are high.",answer:"❌ are → ✅ is"},
+{sentence:"He would have come if he would know.",answer:"❌ would know → ✅ had known"},
+{sentence:"I demand that he goes.",answer:"❌ goes → ✅ go"},
+{sentence:"It is essential that she is informed.",answer:"❌ is → ✅ be"},
+{sentence:"I suggest that he takes it.",answer:"❌ takes → ✅ take"},
+{sentence:"She recommended that he goes.",answer:"❌ goes → ✅ go"},
+{sentence:"I would rather he comes.",answer:"❌ comes → ✅ came"},
+{sentence:"He talks like he knows everything.",answer:"❌ knows → ✅ knew"},
+{sentence:"I wish I know the answer.",answer:"❌ know → ✅ knew"},
+{sentence:"If only I would understand.",answer:"❌ would understand → ✅ understood"},
+{sentence:"He acts as though he owns it.",answer:"❌ owns → ✅ owned"},
+{sentence:"It’s time he leaves.",answer:"❌ leaves → ✅ left"},
+{sentence:"Under no circumstances you should go.",answer:"❌ you should → ✅ should you"},
+{sentence:"Never I have seen this.",answer:"❌ I have → ✅ have I"},
+{sentence:"Rarely he goes there.",answer:"❌ he goes → ✅ does he go"},
+{sentence:"Little I knew about it.",answer:"❌ I knew → ✅ did I know"},
+{sentence:"Only then I realised.",answer:"❌ I realised → ✅ did I realise"},
+{sentence:"Seldom they visit.",answer:"❌ they visit → ✅ do they visit"},
+{sentence:"Not until he came I understood.",answer:"❌ I understood → ✅ did I understand"},
+{sentence:"No sooner he arrived than...",answer:"❌ he arrived → ✅ had he arrived"},
+{sentence:"Hardly I had left when...",answer:"❌ I had → ✅ had I"},
+{sentence:"Scarcely he had spoken when...",answer:"❌ he had → ✅ had he"},
+{sentence:"He is used to work late.",answer:"❌ work → ✅ working"},
+{sentence:"I am used to get up early.",answer:"❌ get → ✅ getting"},
+{sentence:"She used to working here.",answer:"❌ working → ✅ work"},
+{sentence:"He would rather to stay.",answer:"❌ to stay → ✅ stay"},
+{sentence:"She would rather staying.",answer:"❌ staying → ✅ stay"},
+{sentence:"I would prefer you go.",answer:"❌ go → ✅ went"},
+{sentence:"He insisted to leaving.",answer:"❌ to leaving → ✅ on leaving"},
+{sentence:"She suggested to leave.",answer:"❌ to leave → ✅ leaving"},
+{sentence:"He admitted to have stolen.",answer:"❌ to have → ✅ having"},
+{sentence:"She avoided to answer.",answer:"❌ to answer → ✅ answering"}
+]
+};
+
+// Logic is preserved but updated for UI triggers
+let currentLevel = null;
+let currentIndex = 0;
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (audioUnlocked) return;
+    const sounds = ["soundReveal", "soundNext", "soundHover"];
+    sounds.forEach(id => {
+        const s = document.getElementById(id);
+        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
+    });
+    audioUnlocked = true;
+}
+
+function playSound(id) {
+    unlockAudio();
+    const sound = document.getElementById(id);
+    if (sound) {
+        sound.currentTime = 0;
+        sound.volume = 0.4;
+        sound.play().catch(() => {});
+    }
+}
+
+function showHome() {
+    document.body.className = "home";
+    document.getElementById("app").innerHTML = `
+        <h1 style="color: var(--accent-gold)">WHAT HAPPENED HERE?? 🤔</h1>
+        <div class="card">
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Can you spot the grammatical error?</p>
+            <button class="level-btn" onmouseover="playSound('soundHover')" onclick="startGame(1)">Easy</button>
+            <button class="level-btn" onmouseover="playSound('soundHover')" onclick="startGame(2)">Harder</button>
+            <button class="level-btn" onmouseover="playSound('soundHover')" onclick="startGame(3)">Hard</button>
+        </div>
+    `;
+}
+
+function startGame(level) {
+    unlockAudio();
+    currentLevel = level;
+    currentIndex = 0;
+    document.body.className = "level" + level;
+    showQuestion();
+}
+
+function showQuestion() {
+    const item = data[currentLevel][currentIndex];
+    document.getElementById("app").innerHTML = `
+        <div style="position: relative;">
+            <button class="level-btn" style="width: auto; margin-bottom: 20px; font-size: 0.8rem; padding: 10px 20px;" onclick="showHome()">
+                🏠 Back to Start
+            </button>
+            
+            <h1>Level ${currentLevel}</h1>
+            <div class="card">
+                <div class="sentence">${item.sentence}</div>
+                <button id="resolveBtn" class="action-btn" onclick="resolve()">Resolve Error</button>
+                <div class="answer" id="answer">${item.answer}</div>
+                <button id="nextBtn" class="next-btn" onclick="next()">Next Sentence →</button>
+            </div>
+            <p style="margin-top: 20px; color: var(--text-dim); font-size: 0.9rem;">
+                Question ${currentIndex + 1} of ${data[currentLevel].length}
+            </p>
+        </div>
+    `;
+}
+
+function resolve() {
+    document.getElementById("answer").style.display = "block";
+    document.getElementById("resolveBtn").style.display = "none";
+    document.getElementById("nextBtn").style.display = "block";
+    playSound("soundReveal");
+}
+
+function next() {
+    playSound("soundNext");
+    currentIndex++;
+    if (currentIndex >= data[currentLevel].length) {
+        showHome();
+    } else {
+        showQuestion();
+    }
+}
+
+showHome();
+</script>
+
+<footer class="footer">
+    © 2026 James Wynne • 
+    <a href="mailto:jiwynne72@gmail.com">Email</a> • 
+    <a href="https://jwynne.wixsite.com/english" target="_blank">Website</a>
+</footer>
+</body>
+</html>

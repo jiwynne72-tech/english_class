@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>English Connect: The ENGLISH Wall</title>
+    <style>
+        :root {
+            --glow-color: #00d4ff;
+            --tile-default: #1a1a2e;
+            --tile-selected: #34495e;
+            --tile-wrong: #441111;
+            --timer-color: #00d4ff; 
+            --cat-1: #2ecc71; 
+            --cat-2: #f1c40f; 
+            --cat-3: #9b59b6; 
+        }
+
+        body {
+            background: #020205;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .wall-bg {
+            position: absolute;
+            width: 100%; height: 100%;
+            background-color: #0a0a0c;
+            background-image: 
+                linear-gradient(335deg, #050505 23px, transparent 23px),
+                linear-gradient(155deg, #08080a 23px, transparent 23px),
+                linear-gradient(335deg, #050505 23px, transparent 23px),
+                linear-gradient(155deg, #08080a 23px, transparent 23px);
+            background-size: 58px 58px;
+            background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .vignette {
+            position: absolute;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.9) 100%);
+            z-index: -1;
+        }
+
+        #game-container { text-align: center; width: 90%; max-width: 650px; position: relative; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;}
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .tile {
+            background: var(--tile-default);
+            border: 2px solid var(--glow-color);
+            padding: 35px 5px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            z-index: 1;
+        }
+
+        .tile.selected { background: var(--tile-selected); border-color: #fff; box-shadow: 0 0 15px var(--glow-color); }
+        .tile.wrong { background: var(--tile-wrong) !important; border-color: #ff0000 !important; }
+        .tile.solved-1 { background: var(--cat-1) !important; color: black; border-color: white; }
+        .tile.solved-2 { background: var(--cat-2) !important; color: black; border-color: white; }
+        .tile.solved-3 { background: var(--cat-3) !important; color: black; border-color: white; }
+
+        /* New Progress Bar Styling */
+        #timer-container {
+            width: 200px;
+            height: 6px;
+            background: #1a1a2e;
+            margin: 0 auto 20px auto;
+            border-radius: 10px;
+            border: 1px solid #333;
+            overflow: hidden;
+            display: none;
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--glow-color);
+            box-shadow: 0 0 10px var(--glow-color);
+            transition: width 0.1s linear;
+        }
+        
+        #lives { 
+            font-size: 2.5rem; 
+            color: #e94560; 
+            margin: 10px 0 5px 0; 
+            letter-spacing: 20px; 
+            text-shadow: 0 0 15px rgba(233, 69, 96, 0.6);
+        }
+
+        #connection-reveal {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            min-height: 1.5em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+
+        button {
+            padding: 15px 30px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 2px solid var(--glow-color);
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 1rem;
+        }
+
+        button:hover { background: var(--glow-color); color: black; box-shadow: 0 0 20px var(--glow-color); }
+
+        #msg-overlay {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px 50px;
+            border: 3px solid var(--glow-color);
+            border-radius: 10px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 0 50px var(--glow-color);
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+            font-size: 7pt;
+            color: #666;
+            padding: 15px 0;
+            z-index: 10;
+        }
+
+        .footer a { color: #888; text-decoration: none; }
+        .footer a:hover { color: var(--glow-color); }
+    </style>
+</head>
+<body>
+
+<div class="wall-bg"></div>
+<div class="vignette"></div>
+
+<div id="game-container">
+    <div id="menu">
+        <h1 style="text-shadow: 0 0 30px var(--glow-color); font-size: 4rem; margin-bottom: 10px;">THE ENGLISH WALL</h1>
+        <label style="color:#ccc;"><input type="checkbox" id="timerToggle" checked style="transform: scale(1.6); vertical-align: middle;"> Timer</label>
+        <div style="margin-top:20px;">
+            <button onclick="startGame('easy')">LEVEL 1</button>
+            <button onclick="startGame('hard')">LEVEL 2</button>
+        </div>
+    </div>
+
+    <div id="game-ui" style="display:none;">
+        <div class="grid" id="grid">
+            <div id="msg-overlay">WALL SOLVED!</div>
+        </div>
+        <div id="lives">● ● ●</div>
+        
+        <div id="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+
+        <div id="connection-reveal"></div>
+        <div class="controls">
+            <button onclick="solveWall()" id="solveBtn">SOLVE</button>
+            <button onclick="revealConnections()" id="revealBtn" style="display:none;">REVEAL CONNECTION</button>
+            <button onclick="location.reload()">MENU</button>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    © 2026 James Wynne • 
+    <a href="mailto:jiwynne72@gmail.com">Email</a> • 
+    <a href="https://jwynne.wixsite.com/english" target="_blank">Website</a>
+</footer>
+
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === 'correct') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(110, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'ping') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+            osc.start(); osc.stop(audioCtx.currentTime + 1);
+        }
+    }
+
+    const wallLibrary = {
+        easy: [
+            {data: [{w:"Apple",c:1},{w:"Banana",c:1},{w:"Cherry",c:1},{w:"Red",c:2},{w:"Blue",c:2},{w:"Green",c:2},{w:"Dog",c:3},{w:"Cat",c:3},{w:"Fish",c:3}], sol: "Fruit / Colors / Animals"},
+            {data: [{w:"Car",c:1},{w:"Bus",c:1},{w:"Train",c:1},{w:"Run",c:2},{w:"Jump",c:2},{w:"Swim",c:2},{w:"Book",c:3},{w:"Pen",c:3},{w:"Desk",c:3}], sol: "Transport / Verbs / Classroom"},
+            {data: [{w:"Mother",c:1},{w:"Father",c:1},{w:"Sister",c:1},{w:"Milk",c:2},{w:"Juice",c:2},{w:"Water",c:2},{w:"Bread",c:3},{w:"Rice",c:3},{w:"Pasta",c:3}], sol: "Family / Drinks / Foods"},
+            {data: [{w:"One",c:1},{w:"Two",c:1},{w:"Three",c:1},{w:"Happy",c:2},{w:"Sad",c:2},{w:"Angry",c:2},{w:"Large",c:3},{w:"Small",c:3},{w:"Tiny",c:3}], sol: "Numbers / Adjectives / Size"},
+            {data: [{w:"Hand",c:1},{w:"Foot",c:1},{w:"Head",c:1},{w:"Shirt",c:2},{w:"Sock",c:2},{w:"Hat",c:2},{w:"Rain",c:3},{w:"Snow",c:3},{w:"Sun",c:3}], sol: "Body / Clothes / Weather"},
+            {data: [{w:"London",c:1},{w:"Paris",c:1},{w:"Tokyo",c:1},{w:"Doctor",c:2},{w:"Nurse",c:2},{w:"Chef",c:3},{w:"Read",c:3},{w:"Write",c:3},{w:"Speak",c:3}], sol: "Cities / Jobs / Study Verbs"},
+            {data: [{w:"Table",c:1},{w:"Chair",c:1},{w:"Bed",c:1},{w:"Circle",c:2},{w:"Square",c:2},{w:"Line",c:2},{w:"Rose",c:3},{w:"Tulip",c:3},{w:"Daisy",c:3}], sol: "Furniture / Shapes / Flowers"},
+            {data: [{w:"Piano",c:1},{w:"Drum",c:1},{w:"Flute",c:1},{w:"Big",c:2},{w:"Huge",c:2},{w:"Great",c:2},{w:"Aunt",c:3},{w:"Uncle",c:3},{w:"Niece",c:3}], sol: "Instruments / Synonyms / Relatives"},
+            {data: [{w:"Spring",c:1},{w:"Summer",c:1},{w:"Winter",c:1},{w:"Cup",c:2},{w:"Plate",c:2},{w:"Fork",c:2},{w:"Monday",c:3},{w:"Friday",c:3},{w:"Sunday",c:3}], sol: "Seasons / Kitchen / Days"},
+            {data: [{w:"Fast",c:1},{w:"Quick",c:1},{w:"Swift",c:1},{w:"Gold",c:2},{w:"Silver",c:2},{w:"Copper",c:2},{w:"Bird",c:3},{w:"Bat",c:3},{w:"Plane",c:3}], sol: "Speed / Metals / Things that fly"},
+            {data: [{w:"Eyes",c:1},{w:"Ears",c:1},{w:"Nose",c:1},{w:"Paper",c:2},{w:"Pencil",c:2},{w:"Eraser",c:2},{w:"Ten",c:3},{w:"Twenty",c:3},{w:"Thirty",c:3}], sol: "Face / Stationery / Multiples of 10"},
+            {data: [{w:"Bread",c:1},{w:"Butter",c:1},{w:"Cheese",c:1},{w:"Lake",c:2},{w:"River",c:2},{w:"Ocean",c:2},{w:"North",c:3},{w:"South",c:3},{w:"West",c:3}], sol: "Dairy Items / Water Bodies / Directions"},
+            {data: [{w:"Sun",c:1},{w:"Moon",c:1},{w:"Star",c:1},{w:"Leg",c:2},{w:"Arm",c:2},{w:"Knee",c:2},{w:"Cold",c:3},{w:"Hot",c:3},{w:"Warm",c:3}], sol: "Space / Body Parts / Temperatures"},
+            {data: [{w:"Pizza",c:1},{w:"Burger",c:1},{w:"Taco",c:1},{w:"Happy",c:2},{w:"Sad",c:2},{w:"Glad",c:2},{w:"Wood",c:3},{w:"Stone",c:3},{w:"Brick",c:3}], sol: "Fast Food / Synonyms for Happy / Building Materials"},
+            {data: [{w:"Shirt",c:1},{w:"Pants",c:1},{w:"Dress",c:1},{w:"North",c:2},{w:"South",c:2},{w:"East",c:2},{w:"Gold",c:3},{w:"Silver",c:3},{w:"Bronze",c:3}], sol: "Clothing / Directions / Medals"},
+            {data: [{w:"Small",c:1},{w:"Little",c:1},{w:"Tiny",c:1},{w:"Nurse",c:2},{w:"Cook",c:2},{w:"Pilot",c:2},{w:"Rain",c:3},{w:"Wind",c:3},{w:"Fog",c:3}], sol: "Size / Jobs / Weather"},
+            {data: [{w:"Milk",c:1},{w:"Tea",c:1},{w:"Coffee",c:1},{w:"March",c:2},{w:"April",c:2},{w:"May",c:2},{w:"Walk",c:3},{w:"Run",c:3},{w:"Skip",c:3}], sol: "Hot Drinks / Months / Movement"},
+            {data: [{w:"Hat",c:1},{w:"Cap",c:1},{w:"Beanie",c:1},{w:"Big",c:2},{w:"Large",c:2},{w:"Giant",c:2},{w:"Paper",c:3},{w:"Glue",c:3},{w:"Tape",c:3}], sol: "Headwear / Synonyms for Big / Crafts"},
+            {data: [{w:"Lion",c:1},{w:"Tiger",c:1},{w:"Bear",c:1},{w:"One",c:2},{w:"First",c:2},{w:"Single",c:2},{w:"Cake",c:3},{w:"Pie",c:3},{w:"Tart",c:3}], sol: "Wild Animals / Number Words / Desserts"},
+            {data: [{w:"Violin",c:1},{w:"Guitar",c:1},{w:"Harp",c:1},{w:"Sweet",c:2},{w:"Sour",c:2},{w:"Salty",c:2},{w:"Fly",c:3},{w:"Bee",c:3},{w:"Ant",c:3}], sol: "String Instruments / Tastes / Insects"},
+            {data: [{w:"Aunt",c:1},{w:"Uncle",c:1},{w:"Cousin",c:1},{w:"Bed",c:2},{w:"Couch",c:2},{w:"Rug",c:2},{w:"Blue",c:3},{w:"Navy",c:3},{w:"Aqua",c:3}], sol: "Relatives / Home Items / Shades of Blue"},
+            {data: [{w:"Pen",c:1},{w:"Pencil",c:1},{w:"Crayon",c:1},{w:"Sea",c:2},{w:"Lake",c:2},{w:"Pond",c:2},{w:"Hard",c:3},{w:"Soft",c:3},{w:"Rough",c:3}], sol: "Writing Tools / Water / Textures"},
+            {data: [{w:"Paris",c:1},{w:"Rome",c:1},{w:"Berlin",c:1},{w:"Sad",c:2},{w:"Mad",c:2},{w:"Bad",c:2},{w:"Rose",c:3},{w:"Lily",c:3},{w:"Fern",c:3}], sol: "Europe Cities / Rhyming words / Plants"},
+            {data: [{w:"Ship",c:1},{w:"Boat",c:1},{w:"Yacht",c:1},{w:"Red",c:2},{w:"Pink",c:2},{w:"Maroon",c:2},{w:"Hand",c:3},{w:"Face",c:3},{w:"Back",c:3}], sol: "Sea Vessels / Shades of Red / Body"},
+            {data: [{w:"Winter",c:1},{w:"Spring",c:1},{w:"Fall",c:1},{w:"Desk",c:2},{w:"Chair",c:2},{w:"Table",c:2},{w:"Bird",c:3},{w:"Plane",c:3},{w:"Kite",c:3}], sol: "Seasons / Furniture / Flying Things"},
+            {data: [{w:"Dog",c:1},{w:"Wolf",c:1},{w:"Fox",c:1},{w:"Car",c:2},{w:"Truck",c:2},{w:"Van",c:2},{w:"Sun",c:3},{w:"Fire",c:3},{w:"Lamp",c:3}], sol: "Canines / Road Vehicles / Light Sources"},
+            {data: [{w:"Bread",c:1},{w:"Rice",c:1},{w:"Corn",c:1},{w:"Green",c:2},{w:"Lime",c:2},{w:"Olive",c:2},{w:"Fast",c:3},{w:"Quick",c:3},{w:"Rapid",c:3}], sol: "Grains / Shades of Green / Speed"},
+            {data: [{w:"Mars",c:1},{w:"Venus",c:1},{w:"Earth",c:1},{w:"Hat",c:2},{w:"Shoe",c:2},{w:"Sock",c:2},{w:"Rain",c:3},{w:"Snow",c:3},{w:"Hail",c:3}], sol: "Planets / Clothing / Precipitation"},
+            {data: [{w:"Oak",c:1},{w:"Pine",c:1},{w:"Palm",c:1},{w:"Soup",c:2},{w:"Stew",c:2},{w:"Chili",c:2},{w:"Ten",c:3},{w:"Six",c:3},{w:"Four",c:3}], sol: "Trees / Warm Foods / Even Numbers"},
+            {data: [{w:"Piano",c:1},{w:"Organ",c:1},{w:"Keys",c:1},{w:"Ball",c:2},{w:"Bat",c:2},{w:"Goal",c:2},{w:"Cow",c:3},{w:"Pig",c:3},{w:"Goat",c:3}], sol: "Keyboard Music / Sports / Farm Animals"},
+            {data: [{w:"Math",c:1},{w:"Art",c:1},{w:"Music",c:1},{w:"Box",c:2},{w:"Bag",c:2},{w:"Bin",c:2},{w:"Gold",c:3},{w:"Iron",c:3},{w:"Lead",c:3}], sol: "School Subjects / Containers / Metals"},            {data: [{w:"March",c:1},{w:"June",c:1},{w:"July",c:1},{w:"Phone",c:2},{w:"Tablet",c:2},{w:"Laptop",c:2},{w:"Old",c:3},{w:"Ancient",c:3},{w:"Antique",c:3}], sol: "Months / Tech / Synonyms for Old"},
+            {data: [{w:"Cow",c:1},{w:"Horse",c:1},{w:"Sheep",c:1},{w:"Wood",c:2},{w:"Metal",c:2},{w:"Glass",c:2},{w:"See",c:3},{w:"Hear",c:3},{w:"Smell",c:3}], sol: "Farm Animals / Materials / Senses"},
+            {data: [{w:"Milk",c:1},{w:"Cream",c:1},{w:"Yogurt",c:1},{w:"Wind",c:2},{w:"Storm",c:2},{w:"Cloud",c:2},{w:"Walk",c:3},{w:"Crawl",c:3},{w:"March",c:3}], sol: "Dairy / Weather / Movement"},
+            {data: [{w:"Bike",c:1},{w:"Skate",c:1},{w:"Scoot",c:1},{w:"Tired",c:2},{w:"Sleepy",c:2},{w:"Exhausted",c:2},{w:"King",c:3},{w:"Queen",c:3},{w:"Knight",c:3}], sol: "Rideables / Synonyms for Tired / Chess Pieces"},
+            {data: [{w:"Tall",c:1},{w:"High",c:1},{w:"Lofty",c:1},{w:"Honey",c:2},{w:"Sugar",c:2},{w:"Syrup",c:2},{w:"Desk",c:3},{w:"Lamp",c:3},{w:"Shelf",c:3}], sol: "Synonyms for Tall / Sweet Items / Office Furniture"},
+            {data: [{w:"Bee",c:1},{w:"Ant",c:1},{w:"Wasp",c:1},{w:"Gold",c:2},{w:"Ruby",c:2},{w:"Pearl",c:2},{w:"Soap",c:3},{w:"Shampoo",c:3},{w:"Towel",c:3}], sol: "Insects / Gems / Bathroom"},
+            {data: [{w:"Ball",c:1},{w:"Bat",c:1},{w:"Glove",c:1},{w:"Think",c:2},{w:"Know",c:2},{w:"Dream",c:2},{w:"Oak",c:3},{w:"Pine",c:3},{w:"Birch",c:3}], sol: "Sports Equipment / Mental States / Trees"},
+            {data: [{w:"Red",c:1},{w:"Pink",c:1},{w:"Brown",c:1},{w:"Lion",c:2},{w:"Tiger",c:2},{w:"Wolf",c:2},{w:"Cold",c:3},{w:"Chilly",c:3},{w:"Freezing",c:3}], sol: "Colors / Predators / Cold states"}
+        ],
+        hard: [
+            {data: [{w:"Lead",c:1},{w:"Wind",c:1},{w:"Bass",c:1},{w:"Read",c:2},{w:"Red",c:2},{w:"Reed",c:2},{w:"Eye",c:3},{w:"Sea",c:3},{w:"Be",c:3}], sol: "Heteronyms / Homophones (R-E-D) / Letter sounds"},
+            {data: [{w:"Knee",c:1},{w:"Gnome",c:1},{w:"Wrist",c:1},{w:"Caught",c:2},{w:"Taught",c:2},{w:"Bought",c:2},{w:"Bark",c:3},{w:"Trunk",c:3},{w:"Leaf",c:3}], sol: "Silent Letters / Rhyming Past Tense / Trees"},
+            {data: [{w:"Tear",c:1},{w:"Live",c:1},{w:"Bow",c:1},{w:"Draft",c:2},{w:"Draught",c:2},{w:"Drought",c:2},{w:"Anthem",c:3},{w:"Antler",c:3},{w:"Antique",c:3}], sol: "Heteronyms / Spellings / Starts with 'Ant'"},
+            {data: [{w:"Write",c:1},{w:"Right",c:1},{w:"Rite",c:1},{w:"Un-",c:2},{w:"Dis-",c:2},{w:"Mis-",c:2},{w:"Knight",c:3},{w:"Night",c:3},{w:"Nite",c:3}], sol: "Triple Homophones / Prefixes / Homophones (N-I-T-E)"},
+            {data: [{w:"Minute",c:1},{w:"Second",c:1},{w:"Hour",c:1},{w:"Dessert",c:2},{w:"Desert",c:2},{w:"Deserted",c:2},{w:"Cue",c:3},{w:"Queue",c:3},{w:"Q",c:3}], sol: "Time / D-E-S-E-R-T spelling / Sound of 'Q'"},
+            {data: [{w:"Ate",c:1},{w:"Eight",c:1},{w:"Hate",c:1},{w:"Wait",c:2},{w:"Weight",c:2},{w:"Eight",c:2},{w:"Pool",c:3},{w:"Table",c:3},{w:"Cue",c:3}], sol: "Rhymes / Homophones / Snooker"},
+            {data: [{w:"Rough",c:1},{w:"Tough",c:1},{w:"Enough",c:1},{w:"Bear",c:2},{w:"Bare",c:2},{w:"Beer",c:2},{w:"Bat",c:3},{w:"Club",c:3},{w:"Ball",c:3}], sol: "O-U-G-H sounds / B-E-R variations / Sports Gear"},
+            {data: [{w:"Scent",c:1},{w:"Cent",c:1},{w:"Sent",c:1},{w:"Peak",c:2},{w:"Peek",c:2},{w:"Pique",c:2},{w:"Bough",c:3},{w:"Rough",c:3},{w:"Cough",c:3}], sol: "Triple Homophones / P-E-A-K variations / O-U-G-H sounds"},
+            {data: [{w:"Wright",c:1},{w:"Write",c:1},{w:"Right",c:1},{w:"Key",c:2},{w:"Quay",c:2},{w:"Cay",c:2},{w:"Sword",c:3},{w:"Answer",c:3},{w:"Two",c:3}], sol: "W-R-I-T-E Homophones / K-E-Y Homophones / Silent W"},
+            {data: [{w:"Close",c:1},{w:"Present",c:1},{w:"Object",c:1},{w:"Rein",c:2},{w:"Rain",c:2},{w:"Reign",c:2},{w:"Ewe",c:3},{w:"You",c:3},{w:"U",c:3}], sol: "Heteronyms / R-E-I-N Triplets / Sound of 'U'"},
+            {data: [{w:"Know",c:1},{w:"No",c:1},{w:"Now",c:1},{w:"Bare",c:2},{w:"Bear",c:2},{w:"Beer",c:2},{w:"Ghost",c:3},{w:"Honest",c:3},{w:"Hour",c:3}], sol: "N-O words / B-E-A-R sounds / Silent H"},
+            {data: [{w:"Raise",c:1},{w:"Rays",c:1},{w:"Raze",c:1},{w:"Wait",c:2},{w:"Weight",c:2},{w:"Watt",c:2},{w:"Phlem",c:3},{w:"Gnome",c:3},{w:"Sign",c:3}], sol: "R-A-I-S-E Triplets / W-A-I-T sounds / Silent G"},
+            {data: [{w:"Hear",c:1},{w:"Here",c:1},{w:"Hare",c:1},{w:"Road",c:2},{w:"Rowed",c:2},{w:"Rode",c:2},{w:"Psych",c:3},{w:"Psalm",c:3},{w:"Pter",c:3}], sol: "H-E-A-R sounds / R-O-A-D Triplets / Silent P"},
+            {data: [{w:"Sight",c:1},{w:"Site",c:1},{w:"Cite",c:1},{w:"Main",c:2},{w:"Mane",c:2},{w:"Maine",c:2},{w:"Debt",c:3},{w:"Doubt",c:3},{w:"Subtle",c:3}], sol: "S-I-G-H-T Triplets / M-A-I-N Triplets / Silent B"},
+            {data: [{w:"By",c:1},{w:"Buy",c:1},{w:"Bye",c:1},{w:"Sew",c:2},{w:"So",c:2},{w:"Sow",c:2},{w:"Castle",c:3},{w:"Listen",c:3},{w:"Witch",c:3}], sol: "B-Y Triplets / S-O Triplets / Silent T"},
+            {data: [{w:"Meat",c:1},{w:"Meet",c:1},{w:"Mete",c:1},{w:"Fore",c:2},{w:"Four",c:2},{w:"For",c:2},{w:"Column",c:3},{w:"Autumn",c:3},{w:"Hymn",c:3}], sol: "M-E-A-T Triplets / F-O-R Triplets / Silent N"},
+            {data: [{w:"Peak",c:1},{w:"Peek",c:1},{w:"Pique",c:1},{w:"Fair",c:2},{w:"Fare",c:2},{w:"Fear",c:2},{w:"Lamb",c:3},{w:"Comb",c:3},{w:"Thumb",c:3}], sol: "P-E-A-K Triplets / F-A-I-R sounds / Silent B (End)"},
+            {data: [{w:"Doe",c:1},{w:"Dough",c:1},{w:"Do",c:1},{w:"Pale",c:2},{w:"Pail",c:2},{w:"Paul",c:2},{w:"Knife",c:3},{w:"Know",c:3},{w:"Knee",c:3}], sol: "D-O-E sounds / P-A-L-E sounds / Silent K"},
+            {data: [{w:"To",c:1},{w:"Too",c:1},{w:"Two",c:1},{w:"Heal",c:2},{w:"Heel",c:2},{w:"He'll",c:2},{w:"Whale",c:3},{w:"White",c:3},{w:"Wheel",c:3}], sol: "The T-O Triplets / H-E-E-L Triplets / 'Wh' words"},
+            {data: [{w:"Way",c:1},{w:"Weigh",c:1},{w:"Whey",c:1},{w:"Steal",c:2},{w:"Steel",c:2},{w:"Still",c:2},{w:"Recipe",c:3},{w:"Elite",c:3},{w:"Cafe",c:3}], sol: "W-A-Y Triplets / S-T-E-E-L sounds / Ending in 'E' sound"},
+            {data: [{w:"Aisle",c:1},{w:"I'll",c:1},{w:"Isle",c:1},{w:"Wait",c:2},{w:"Weight",c:2},{w:"Eight",c:2},{w:"Guilt",c:3},{w:"Guide",c:3},{w:"Guest",c:3}], sol: "I-S-L-E Triplets / Rhyming '-eight' / Silent U"},
+            {data: [{w:"Pair",c:1},{w:"Pare",c:1},{w:"Pear",c:1},{w:"Peace",c:2},{w:"Piece",c:2},{w:"Pace",c:2},{w:"Wrong",c:3},{w:"Write",c:3},{w:"Wrap",c:3}], sol: "P-A-I-R Triplets / P-E-A-C-E sounds / Silent W"},
+            {data: [{w:"Seam",c:1},{w:"Seem",c:1},{w:"Same",c:1},{w:"Weak",c:2},{w:"Week",c:2},{w:"Wick",c:2},{w:"Chaos",c:3},{w:"Echo",c:3},{w:"Choir",c:3}], sol: "S-E-A-M sounds / W-E-E-K sounds / 'Ch' as 'K'"},
+            {data: [{w:"Sale",c:1},{w:"Sail",c:1},{w:"Sell",c:1},{w:"Bread",c:2},{w:"Bred",c:2},{w:"Brad",c:2},{w:"Whole",c:3},{w:"Who",c:3},{w:"Whose",c:3}], sol: "S-A-I-L sounds / B-R-E-A-D sounds / 'Wh' as 'H'"},
+            {data: [{w:"Air",c:1},{w:"Heir",c:1},{w:"Are",c:1},{w:"Plane",c:2},{w:"Plain",c:2},{w:"Plan",c:2},{w:"Phone",c:3},{w:"Graph",c:3},{w:"Phase",c:3}], sol: "A-I-R sounds / P-L-A-N-E sounds / 'Ph' as 'F'"},
+            {data: [{w:"Vain",c:1},{w:"Vein",c:1},{w:"Vane",c:1},{w:"Hour",c:2},{w:"Our",c:2},{w:"Are",c:2},{w:"Bridge",c:3},{w:"Edge",c:3},{w:"Judge",c:3}], sol: "V-A-I-N Triplets / H-O-U-R sounds / Silent D"},
+            {data: [{w:"Tale",c:1},{w:"Tail",c:1},{w:"Tell",c:1},{w:"Pre-",c:2},{w:"Post-",c:2},{w:"Inter-",c:2},{w:"Bank",c:3},{w:"River",c:3},{w:"Flow",c:3}], sol: "T-A-L words / Prefixes / River items"},
+            {data: [{w:"Blue",c:1},{w:"Blew",c:1},{w:"Blow",c:1},{w:"Heart",c:2},{w:"Heard",c:2},{w:"Herd",c:2},{w:"Set",c:3},{w:"Match",c:3},{w:"Point",c:3}], sol: "B-L sounds / H-E-A-R variations / Tennis terms"},
+            {data: [{w:"Their",c:1},{w:"They're",c:1},{w:"There",c:1},{w:"Peace",c:2},{w:"Piece",c:2},{w:"Peas",c:2},{w:"Queen",c:3},{w:"Worker",c:3},{w:"Drone",c:3}], sol: "The Triple Threat / Homophones / Bees"},
+            {data: [{w:"Acknowledge",c:1},{w:"Knife",c:1},{w:"Knowledge",c:1},{w:"Manage",c:2},{w:"Agenda",c:2},{w:"Agent",c:2},{w:"Flower",c:3},{w:"Flour",c:3},{w:"Floor",c:3}], sol: "Silent K / Starts with 'Age' / Near-Homophones"},
+            {data: [{w:"Principal",c:1},{w:"Principle",c:1},{w:"Prince",c:1},{w:"Feet",c:2},{w:"Yards",c:2},{w:"Inches",c:2},{w:"Sun",c:3},{w:"Son",c:3},{w:"Soon",c:3}], sol: "P-R-I-N sounds / Measurement / Near-Homophones"},
+            {data: [{w:"Loose",c:1},{w:"Lose",c:1},{w:"Loss",c:1},{w:"Sigh",c:2},{w:"Eye",c:2},{w:"I",c:2},{w:"Wind",c:3},{w:"Solar",c:3},{w:"Hydro",c:3}], sol: "Common Spelling Errors / Triple Homophones / Renewable Energy"},
+            {data: [{w:"Whether",c:1},{w:"Weather",c:1},{w:"Wether",c:1},{w:"See",c:2},{w:"Sea",c:2},{w:"Si",c:2},{w:"Worker",c:3},{w:"Queen",c:3},{w:"Drone",c:3}], sol: "The 'W' Homophones / Homophones (S-E-E) / Ants/Bees"},
+            {data: [{w:"Course",c:1},{w:"Coarse",c:1},{w:"Cause",c:1},{w:"Feet",c:2},{w:"Feat",c:2},{w:"Fete",c:2},{w:"Bass",c:3},{w:"Salmon",c:3},{w:"Trout",c:3}], sol: "C-O-U-R-S-E sounds / Homophones (F-E-E-T) / Fish"},
+            {data: [{w:"Accept",c:1},{w:"Except",c:1},{w:"Aspect",c:1},{w:"Mane",c:2},{w:"Main",c:2},{w:"Maine",c:2},{w:"Book",c:3},{w:"Chapter",c:3},{w:"Index",c:3}], sol: "Commonly Confused / Homophones (M-A-I-N) / Books"},
+            {data: [{w:"Advise",c:1},{w:"Advice",c:1},{w:"Device",c:1},{w:"Plain",c:2},{w:"Plane",c:2},{w:"Plan",c:2},{w:"Solar",c:3},{w:"Lunar",c:3},{w:"Stellar",c:3}], sol: "Verb vs Noun / P-L-A-N spelling / Space adj"},
+            {data: [{w:"Break",c:1},{w:"Brake",c:1},{w:"Broke",c:1},{w:"Knight",c:2},{w:"Night",c:2},{w:"Nite",c:2},{w:"Root",c:3},{w:"Stem",c:3},{w:"Seed",c:3}], sol: "Homophones (B-R-E-A-K) / Homophones (N-I-G-H-T) / Botany"},
+            {data: [{w:"Complement",c:1},{w:"Compliment",c:1},{w:"Complex",c:1},{w:"Fair",c:2},{w:"Fare",c:2},{w:"Fear",c:2},{w:"Hydro",c:3},{w:"Aqua",c:3},{w:"Liquid",c:3}], sol: "Spellings / Near-Homophones / Water prefixes"},
+            {data: [{w:"Stationary",c:1},{w:"Stationery",c:1},{w:"Station",c:1},{w:"Toe",c:2},{w:"Tow",c:2},{w:"Two",c:2},{w:"Ace",c:3},{w:"King",c:3},{w:"Jack",c:3}], sol: "A vs E spelling / Triple Homophone / Card deck"}
+        ]
+    };
+
+    let selectedTiles = [], timeLeft = 120, timerInterval = null, isProcessing = false, mistakes = 0, currentWallSol = "";
+    const TOTAL_TIME = 120;
+
+    function startGame(diff) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const isTimed = document.getElementById('timerToggle').checked;
+        const walls = wallLibrary[diff];
+        const wall = walls[Math.floor(Math.random() * walls.length)];
+        currentWallSol = wall.sol;
+        mistakes = 0; 
+        updateLives();
+        document.getElementById('connection-reveal').innerText = "";
+        document.getElementById('revealBtn').style.display = 'none';
+        document.getElementById('solveBtn').style.display = 'inline-block';
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'block';
+        const grid = document.getElementById('grid'), msg = document.getElementById('msg-overlay');
+        grid.innerHTML = ''; grid.appendChild(msg);
+        [...wall.data].sort(() => Math.random() - 0.5).forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'tile'; div.innerText = item.w; div.dataset.cat = item.c;
+            div.onclick = () => selectTile(div); grid.appendChild(div);
+        });
+
+        if (isTimed) {
+            timeLeft = TOTAL_TIME;
+            document.getElementById('timer-container').style.display = 'block';
+            updateTimerBar();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerBar();
+                if (timeLeft <= 0) {
+                    playSound('ping');
+                    solveWall("TIME UP!");
+                }
+            }, 1000);
+        } else { 
+            document.getElementById('timer-container').style.display = 'none'; 
+        }
+    }
+
+    function updateTimerBar() {
+        const percentage = (timeLeft / TOTAL_TIME) * 100;
+        document.getElementById('timer-bar').style.width = percentage + "%";
+    }
+
+    function updateLives() {
+        let display = "";
+        for(let i=0; i<3; i++) display += (i < (3 - mistakes)) ? "● " : "○ ";
+        document.getElementById('lives').innerText = display;
+    }
+
+    function selectTile(el) {
+        if (isProcessing || el.classList.contains('solved-1') || el.classList.contains('solved-2') || el.classList.contains('solved-3') || (selectedTiles.length >= 3 && !el.classList.contains('selected'))) return;
+        el.classList.toggle('selected');
+        selectedTiles = Array.from(document.querySelectorAll('.tile.selected'));
+        if (selectedTiles.length === 3) {
+            isProcessing = true;
+            const cat = selectedTiles[0].dataset.cat;
+            if (selectedTiles.every(t => t.dataset.cat === cat)) {
+                playSound('correct');
+                selectedTiles.forEach(t => { t.classList.remove('selected'); t.classList.add(`solved-${cat}`); });
+                isProcessing = false; selectedTiles = []; checkWin();
+            } else {
+                playSound('wrong'); mistakes++; updateLives();
+                selectedTiles.forEach(t => { t.classList.remove('selected'); t.classList.add('wrong'); });
+                setTimeout(() => {
+                    if (mistakes >= 3) { solveWall("WALL LOCKED!"); } 
+                    else { selectedTiles.forEach(t => t.classList.remove('wrong')); selectedTiles = []; isProcessing = false; }
+                }, 600);
+            }
+        }
+    }
+
+    function solveWall(reason = "") {
+        clearInterval(timerInterval); isProcessing = true;
+        document.querySelectorAll('.tile').forEach(t => { t.className = 'tile'; t.classList.add(`solved-${t.dataset.cat}`); });
+        document.getElementById('solveBtn').style.display = 'none';
+        document.getElementById('connection-reveal').innerText = "WHAT CONNECTS THEM?";
+        document.getElementById('revealBtn').style.display = 'inline-block';
+        if (reason) {
+            const overlay = document.getElementById('msg-overlay'); overlay.innerText = reason;
+            overlay.style.display = 'block'; setTimeout(() => overlay.style.display = 'none', 2000);
+        }
+    }
+
+    function checkWin() {
+        if (document.querySelectorAll('[class*="solved-"]').length === 9) {
+            clearInterval(timerInterval);
+            document.getElementById('solveBtn').style.display = 'none';
+            document.getElementById('connection-reveal').innerText = "WHAT CONNECTS THEM?";
+            document.getElementById('revealBtn').style.display = 'inline-block';
+            const overlay = document.getElementById('msg-overlay'); overlay.innerText = "WALL SOLVED!";
+            overlay.style.display = 'block'; setTimeout(() => overlay.style.display = 'none', 2000);
+        }
+    }
+
+    function revealConnections() {
+        document.getElementById('connection-reveal').innerText = currentWallSol;
+        document.getElementById('revealBtn').style.display = 'none';
+    }
+</script>
+</body>
+</html>

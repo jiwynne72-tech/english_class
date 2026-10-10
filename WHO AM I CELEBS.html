@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Am I?</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100dvh; /* Use dynamic height */
+    text-align: center;
+    transition: 0.5s;
+    padding: 20px 0; /* Add padding so content doesn't hit the edges */
+}
+
+.screen { display: none; }
+.active { display: block; }
+
+.container {
+    width: 90%;
+    max-width: 700px;
+}
+
+/* START */
+#startScreen h1 { font-size: 3em; }
+
+#startScreen button {
+    font-size: 1.5em;
+    padding: 20px 40px;
+}
+
+/* GAME */
+.clue {
+    font-size: 1.7em;
+    margin: 20px 0;
+    font-weight: bold;
+    color: #ffdd57;
+}
+
+button {
+    padding: 15px 25px;
+    margin: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background: #ffaa00;
+}
+
+.answer {
+    font-size: 2em;
+    margin-top: 20px;
+    color: #00ffcc;
+}
+
+/* IMAGE */
+#image {
+    margin-top: 20px;
+    width: 220px;
+    height: 220px;
+    border-radius: 20px;
+    display: none;
+    margin-left: auto;
+    margin-right: auto;
+
+    transform: scale(0);
+    opacity: 0;
+    transition: 0.5s ease;
+}
+
+#image.show {
+    display: block;
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* BADGE */
+.badge {
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #222;
+      color: white;
+      text-align: center;
+      padding: 4px;
+      font-size: 7px;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen active">
+    <div class="container">
+        <h1>Do you know who I am? 🤔</h1>
+        <p>Guess who these famous people are!</p>
+        <button onclick="startGame()">START</button>
+    </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen">
+    <div class="container">
+        <h1>Who Am I? <span id="icon"></span></h1>
+
+        <div id="badge" class="badge"></div>
+
+        <div class="clue" id="clue">Click 'Next Clue' to begin!</div>
+
+        <button onclick="nextClue()">Next Clue</button>
+        <button onclick="reveal()">Reveal</button>
+        <button onclick="nextPerson()">Next Person</button>
+        <button onclick="goHome()">🏠 Menu</button>
+
+        <div class="answer" id="answer"></div>
+        <img id="image">
+
+        <audio id="revealSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+    </div>
+</div>
+
+<script>
+
+function goHome(){
+    document.getElementById("gameScreen").classList.remove("active");
+    document.getElementById("startScreen").classList.add("active");
+
+    // reset game state (optional but recommended)
+    document.getElementById("clue").innerText = "Click 'Next Clue' to begin!";
+    document.getElementById("answer").innerText = "";
+
+    const img = document.getElementById("image");
+    img.classList.remove("show");
+}
+
+// ================= CATEGORY IMAGES =================
+// 🔥 YOU PASTE YOUR IMAGE LINKS HERE
+const categoryImages = {
+    football: "https://images.pexels.com/photos/29388521/pexels-photo-29388521.jpeg",
+    actor: "https://images.pexels.com/photos/6895798/pexels-photo-6895798.jpeg",
+    actress: "https://images.pexels.com/photos/8089657/pexels-photo-8089657.jpeg",
+    singer: "https://images.pexels.com/photos/14440540/pexels-photo-14440540.jpeg",
+    rapper: "https://images.pexels.com/photos/10063363/pexels-photo-10063363.jpeg",
+    tech: "https://images.pexels.com/photos/36169773/pexels-photo-36169773.jpeg",
+    streamer: "https://images.pexels.com/photos/9072329/pexels-photo-9072329.jpeg",
+    general: "https://images.pexels.com/photos/208168/pexels-photo-208168.jpeg"
+};
+
+// ================= DATA =================
+const data = [
+
+{ clues:[
+"I became globally famous as a teenager after starring in a dystopian film series where survival is central.",
+"I later won major acting awards and became known for outspoken interviews and strong personality.",
+"I have the same initials as J Lo."
+], answer:"Jennifer Lawrence" },
+
+{ clues:[
+"I am known for powerful ballads and a distinctive, emotional vocal style.",
+"My albums often break records and dominate charts worldwide.",
+"I released a song called 'Hello' after a long break."
+], answer:"Adele" },
+
+
+
+{ clues:[
+"I am a French DJ known for producing global dance hits and collaborating with major pop artists.",
+"My music dominates clubs and festivals around the world.",
+"My first name is D..."
+], answer:"David Guetta" },
+
+{ clues:[
+"I am an Italian defender known for toughness, leadership, and tactical intelligence.",
+"I spent most of my career at Juventus.",
+"I was part of Italy’s Euro 2020 winning team."
+], answer:"Giorgio Chiellini" },
+
+{ clues:[
+"I am a rapper known for deep storytelling and socially conscious lyrics.",
+"My albums are often critically acclaimed and studied for meaning.",
+"My first name is K..."
+], answer:"Kendrick Lamar" },
+
+{ clues:[
+"I am an Australian actor known for playing a powerful god in a superhero franchise.",
+"I often portray physically strong and heroic characters.",
+"My surname is Hemsworth."
+], answer:"Chris Hemsworth" },
+
+{ clues:[
+"I am a global music icon with Caribbean roots and a strong presence in fashion.",
+"I had a major hit involving an umbrella.",
+"I also founded a successful beauty brand."
+], answer:"Rihanna" },
+
+{ clues:[
+"I am a Swiss athlete known for elegance and longevity in my sport.",
+"I dominated tennis for many years with a graceful playing style.",
+"My first name is R..."
+], answer:"Roger Federer" },
+
+{ clues:[
+"I am a pop artist known for bold fashion and theatrical performances.",
+"My name includes a noble title.",
+"I released 'Bad Romance'."
+], answer:"Lady Gaga" },
+
+{ clues:[
+"I am an Australian actor known for playing a clawed superhero.",
+"I have starred in musicals and action films.",
+"My surname is Jackman."
+], answer:"Hugh Jackman" },
+
+{ clues:[
+"I am a young English footballer known for maturity beyond my years.",
+"I play midfield for a top European club.",
+"My first name is J..."
+], answer:"Jude Bellingham" },
+
+{ clues:[
+"I am a rapper known for fast delivery and complex rhyme patterns.",
+"My real name is Marshall.",
+"I starred in a film loosely based on my life."
+], answer:"Eminem" },
+
+{ clues:[
+"I am a Scottish singer known for emotional ballads.",
+"I achieved global success with a song about lost love.",
+"My first name is L..."
+], answer:"Lewis Capaldi" },
+
+{ clues:[
+"I am an actress who gained major attention starring in a film about a famous doll.",
+"I am Australian and known for versatile roles.",
+"My first name is M..."
+], answer:"Margot Robbie" },
+
+{ clues:[
+"I am a Brazilian footballer known for flair, creativity, and skill.",
+"I have played for Barcelona and PSG.",
+"My first name is N..."
+], answer:"Neymar" },
+
+{ clues:[
+"I am a tech founder who created a massive online marketplace.",
+"I later became involved in space travel ventures.",
+"My first name is J..."
+], answer:"Jeff Bezos" },
+
+{ clues:[
+"I am a singer known for soft vocals and a unique visual style.",
+"I often wear oversized clothing.",
+"My first name is B..."
+], answer:"Billie Eilish" },
+
+{ clues:[
+"I am a Georgian footballer known for dribbling and creativity.",
+"I play in Italy and gained rapid recognition.",
+"My surname is difficult for many to pronounce."
+], answer:"Khvicha Kvaratskhelia" },
+
+{ clues:[
+"I am an actor known for loud comedic roles and improvisation.",
+"I have starred in films like Anchorman.",
+"My surname is Ferrell."
+], answer:"Will Ferrell" },
+
+{ clues:[
+"I am a singer known for Latin pop hits and collaborations.",
+"I released a song called 'Havana'.",
+"My first name is C..."
+], answer:"Camila Cabello" },
+
+{ clues:[
+"I am an English striker known for consistency and leadership.",
+"I spent many years at Tottenham before moving abroad.",
+"My first name is H..."
+], answer:"Harry Kane" },
+
+{ clues:[
+"I am a streamer known for gaming and lifestyle content.",
+"I am widely recognized by my online alias.",
+"My name is P...."
+], answer:"Pokimane" },
+
+{ clues:[
+"I am an actor known for action films and philosophical sci-fi roles.",
+"I starred in The Matrix and John Wick.",
+"My first name is Keanu."
+], answer:"Keanu Reeves" },
+
+{ clues:[
+"I am a young English footballer known for pace and creativity.",
+"I play for Arsenal and England.",
+"My first name is Bukayo."
+], answer:"Bukayo Saka" },
+
+{ clues:[
+"I am a British singer known for dance-pop hits.",
+"I released 'Levitating'.",
+"My first name is Dua."
+], answer:"Dua Lipa" },
+
+{ clues:[
+"I am a rapper known for high-energy performances and production.",
+"I created a track called 'SICKO MODE'.",
+"My first name is Travis."
+], answer:"Travis Scott" },
+
+{ clues:[
+"I am an actor known for portraying a genius billionaire superhero.",
+"I played Iron Man in a major film universe.",
+"My initials are R.D.J."
+], answer:"Robert Downey Jr." },
+
+
+
+{ clues:[
+"I am an actor known for portraying a web-slinging superhero in a modern film series.",
+"I began acting at a young age and gained global recognition quickly.",
+"I am British and my first name is Tom."
+], answer:"Tom Holland" },
+
+{ clues:[
+"I am a singer known for emotional pop songs and a strong connection with younger audiences.",
+"I started my career on a Disney Channel show.",
+"I released a song called 'Flowers'."
+], answer:"Miley Cyrus" },
+
+{ clues:[
+"I am a footballer known for composure and leadership as a goalkeeper.",
+"I played a key role in Italy’s Euro 2020 victory.",
+"My first name is Gianluigi."
+], answer:"Gianluigi Donnarumma" },
+
+{ clues:[
+"I am a celebrity chef known for intense personality and high standards.",
+"I host multiple cooking shows where I often shout at contestants.",
+"My surname is Ramsay."
+], answer:"Gordon Ramsay" },
+
+{ clues:[
+"I am a rapper known for blending melodic singing with hip-hop.",
+"I achieved global success with albums that broke streaming records.",
+"My stage name is short and easy to remember."
+], answer:"Drake" },
+
+{ clues:[
+"I am an actress known for playing a dark and mysterious character in a recent series.",
+"I became widely popular after portraying Wednesday Addams.",
+"My first name is Jenna."
+], answer:"Jenna Ortega" },
+
+{ clues:[
+"I am a footballer known for technical skill and creativity in attack.",
+"I am Argentine and have played for Juventus and Roma.",
+"My first name is Paulo."
+], answer:"Paulo Dybala" },
+
+{ clues:[
+"I am a singer known for powerful vocals and global influence.",
+"I started my career in a girl group before going solo.",
+"My first name is Beyoncé."
+], answer:"Beyoncé" },
+
+{ clues:[
+"I am an actor known for action roles and comedic timing.",
+"I often collaborate with the same co-stars in blockbuster films.",
+"My first name is Ryan and my surname is Reynolds."
+], answer:"Ryan Reynolds" },
+
+{ clues:[
+"I am a footballer known for pace and direct attacking play.",
+"I play for Napoli and my national team.",
+"My first name is Victor."
+], answer:"Victor Osimhen" },
+
+{ clues:[
+"I am a singer known for emotional songwriting and piano-based music.",
+"I gained fame through online platforms before mainstream success.",
+"My first name is Sam."
+], answer:"Sam Smith" },
+
+{ clues:[
+"I am an actor known for playing Mr. Bean.",
+"I rely heavily on physical comedy rather than dialogue.",
+"My first name is Rowan."
+], answer:"Rowan Atkinson" },
+
+{ clues:[
+"I am a young footballer known for breaking records at an early age.",
+"I play for Barcelona and Spain.",
+"My first name is Lamine."
+], answer:"Lamine Yamal" },
+
+{ clues:[
+"I am a content creator known for gaming and live streaming.",
+"I became one of the most recognizable Twitch personalities.",
+"My name is ..."
+], answer:"Ninja" },
+
+{ clues:[
+"I am a singer known for blending pop with electronic influences.",
+"I gained popularity with songs that perform well on streaming platforms.",
+"My first name is Dua."
+], answer:"Dua Lipa" },
+
+{ clues:[
+"I am an actor known for intense roles and method acting.",
+"I portrayed Batman in a recent film adaptation.",
+"My surname is Pattinson."
+], answer:"Robert Pattinson" },
+
+{ clues:[
+"I am a footballer known for strength and defensive leadership.",
+"I play for Liverpool and the Netherlands.",
+"My first name is Virgil."
+], answer:"Virgil van Dijk" },
+
+{ clues:[
+"I am a singer known for catchy pop hooks and radio hits.",
+"I released songs like 'Firework'.",
+"My first name is Katy."
+], answer:"Katy Perry" },
+
+{ clues:[
+"I am an actor known for high-energy performances and versatility.",
+"I played a wrestler-turned-hero known as The Rock.",
+"My real name is Dwayne Johnson."
+], answer:"Dwayne Johnson" },
+
+{ clues:[
+"I am a footballer known for playing as a forward for Inter.",
+"I represent Argentina internationally.",
+"My first name is Lautaro."
+], answer:"Lautaro Martínez" },
+
+{ clues:[
+"I am a streamer known for Spanish-language content and huge live audiences.",
+"I often host large online events.",
+"My first name is Ibai."
+], answer:"Ibai Llanos" },
+
+{ clues:[
+"I am a singer known for blending pop and indie influences.",
+"I gained fame through a boy band before going solo.",
+"My first name is Harry."
+], answer:"Harry Styles" },
+
+{ clues:[
+"I am a footballer known for my versatility and defensive ability.",
+"I played for Juventus and France.",
+"My first name is Paul."
+], answer:"Paul Pogba" },
+
+{ clues:[
+"I am a DJ known for wearing a helmet during performances.",
+"I produce electronic dance music.",
+"My stage name is Marshmello."
+], answer:"Marshmello" },
+
+{ clues:[
+"I am a singer known for Italian music and international recognition.",
+"I performed a song called 'Soldi'.",
+"My stage name is Mahmood."
+], answer:"Mahmood" },
+
+
+{ clues:[
+"I am a footballer known for intelligence, vision, and technical mastery in midfield.",
+"I spent many successful years at Real Madrid winning multiple Champions League titles.",
+"I am Croatian and won the Ballon d'Or."
+], answer:"Luka Modrić" },
+
+{ clues:[
+"I built a career that extends beyond music into fashion and business.",
+"I am married to a globally famous rapper and entrepreneur.",
+"My performances often celebrate empowerment and identity."
+], answer:"Beyoncé" },
+
+{ clues:[
+"I portrayed a superhero known for carrying a shield and strong moral values.",
+"I appeared in multiple films within a shared cinematic universe.",
+"My surname is Evans."
+], answer:"Chris Evans" },
+
+{ clues:[
+"I am known for creating viral online videos involving large-scale challenges.",
+"I often give away money, cars, or houses in my content.",
+"My online name includes the word 'Beast'."
+], answer:"MrBeast" },
+
+{ clues:[
+"I am a striker known for exceptional positioning and goal-scoring consistency.",
+"I have played in Germany, England, and Spain at top clubs.",
+"I am Polish."
+], answer:"Robert Lewandowski" },
+
+{ clues:[
+"I rose to fame through a teen drama series before moving into blockbuster films.",
+"I play a key role in a modern superhero franchise.",
+"I am also known for my fashion influence."
+], answer:"Zendaya" },
+
+{ clues:[
+"I am a Canadian artist blending rap and melodic vocals.",
+"My music often explores fame, relationships, and ambition.",
+"I am one of the most streamed artists in the world."
+], answer:"Drake" },
+
+{ clues:[
+"I am an actor famous for performing my own stunts in action films.",
+"I lead a long-running franchise involving secret missions.",
+"I am often seen running intensely in scenes."
+], answer:"Tom Cruise" },
+
+{ clues:[
+"I am a Brazilian footballer known for explosive pace and flair.",
+"I play for a major Spanish club and wear number 7.",
+"I am often compared to past Brazilian legends."
+], answer:"Vinícius Jr." },
+
+{ clues:[
+"I am a tech entrepreneur involved in electric vehicles and space travel.",
+"I lead companies that aim to transform transportation and exploration.",
+"My surname is Musk."
+], answer:"Elon Musk" },
+
+{ clues:[
+"I am one of the most famous athletes in history, known for discipline and branding.",
+"My celebration is copied worldwide by fans.",
+"I am from Portugal."
+], answer:"Cristiano Ronaldo" },
+
+{ clues:[
+"I started in a globally famous boy band before launching a solo career.",
+"My music combines pop with introspective lyrics.",
+"I released 'As It Was'."
+], answer:"Harry Styles" },
+
+{ clues:[
+"I am an actress known for roles in both independent films and major franchises.",
+"I portrayed Black Widow in a superhero universe.",
+"My surname is Johansson."
+], answer:"Scarlett Johansson" },
+
+{ clues:[
+"I am a live streamer known for energetic and chaotic broadcasts.",
+"I gained popularity through gaming and reaction content.",
+"My first name is Kai."
+], answer:"Kai Cenat" },
+
+{ clues:[
+"I am a midfielder known for vision, passing, and long-range shooting.",
+"I play for Manchester City and Belgium.",
+"I am considered among the best midfielders of my era."
+], answer:"Kevin De Bruyne" },
+
+{ clues:[
+"I am a comedian known for high-energy performances and expressive delivery.",
+"I have starred in films and stand-up specials.",
+"My first name is Kevin."
+], answer:"Kevin Hart" },
+
+{ clues:[
+"I gained fame through music shared online before global success.",
+"My songs often explore heartbreak and youth.",
+"I released 'drivers license'."
+], answer:"Olivia Rodrigo" },
+
+{ clues:[
+"I am a Norwegian striker known for physical strength and goal-scoring ability.",
+"I play in the English Premier League.",
+"I am one of the most prolific young scorers."
+], answer:"Erling Haaland" },
+
+{ clues:[
+"I am known for portraying eccentric characters in film.",
+"I played a famous pirate with a unique personality.",
+"My surname is Depp."
+], answer:"Johnny Depp" },
+
+{ clues:[
+"I am a global pop star known for constantly reinventing my music.",
+"I re-recorded several of my own albums.",
+"My fanbase is known for strong loyalty."
+], answer:"Taylor Swift" },
+
+{ clues:[
+"I captained my national team to World Cup victory.",
+"I spent most of my career at Barcelona.",
+"I am often called the greatest of all time."
+], answer:"Lionel Messi" },
+
+{ clues:[
+"I became famous online before entering professional boxing.",
+"I am known for controversy and viral moments.",
+"My surname is Paul."
+], answer:"Logan Paul" },
+
+{ clues:[
+"I am an actress known for both romance and dramatic roles.",
+"I starred in Titanic and won major awards later in my career.",
+], answer:"Kate Winslet" },
+
+
+];
+
+// ================= AUTO TAG =================
+function getCategory(name){
+    name = name.toLowerCase();
+
+    if (["messi","ronaldo","mbapp","neymar","haaland","modric","bellingham","kane","saka","lewandowski","osimhen","vinícius","donnarumma","chiellini"].some(n=>name.includes(n))) return "football";
+
+    if (["depp","radcliffe","reynolds","jackman","evans","johnson","diesel","reeves","holland","hemsworth","pattinson","ferrell","atkinson","hart"].some(n=>name.includes(n))) return "actor";
+
+    if (["lawrence","johansson","aniston","zendaya","winslet","robbie","ortega","bobby"].some(n=>name.includes(n))) return "actress";
+
+    if (["weeknd","rihanna","gaga","beyonce","sheeran","swift","capaldi","harry","bieber","dua","billie","camila","mahmood"].some(n=>name.includes(n))) return "singer";
+
+    if (["eminem","drake","kendrick","travis"].some(n=>name.includes(n))) return "rapper";
+
+    if (["mark","musk","bezos"].some(n=>name.includes(n))) return "tech";
+
+    if (["ninja","pokimane","kai","ibai","mrbeast"].some(n=>name.includes(n))) return "streamer";
+
+    return "general";
+}
+
+// ================= IMAGE =================
+function getImage(category){
+    return categoryImages[category] || categoryImages.general;
+}
+
+// ================= STYLE =================
+const styles = {
+    football: {color:"#27ae60", icon:"⚽"},
+    actor: {color:"#8e44ad", icon:"🎬"},
+    actress: {color:"#e84393", icon:"🎭"},
+    singer: {color:"#f39c12", icon:"🎤"},
+    rapper: {color:"#d35400", icon:"🔥"},
+    tech: {color:"#2980b9", icon:"💻"},
+    streamer: {color:"#1abc9c", icon:"🎮"},
+    general: {color:"#7f8c8d", icon:"⭐"}
+};
+
+// ================= GAME =================
+let current = 0;
+let clueIndex = 0;
+
+function startGame(){
+    document.getElementById("startScreen").classList.remove("active");
+    document.getElementById("gameScreen").classList.add("active");
+    nextPerson();
+}
+
+function applyStyle(item){
+    const style = styles[item.category];
+    document.body.style.background = style.color;
+    document.getElementById("icon").textContent = style.icon;
+
+    const badge = document.getElementById("badge");
+    badge.textContent = item.category.toUpperCase();
+    badge.style.background = style.color;
+}
+
+function nextClue(){
+    if (clueIndex < data[current].clues.length){
+        document.getElementById("clue").innerText = data[current].clues[clueIndex];
+        clueIndex++;
+    }
+}
+
+function reveal(){
+    const item = data[current];
+
+    document.getElementById("answer").innerText = item.answer;
+
+    const img = document.getElementById("image");
+
+    img.onerror = function() {
+        this.src = categoryImages.general; // fallback image
+    };
+
+    img.src = item.image;
+    img.classList.add("show");
+
+    document.getElementById("revealSound").play();
+}
+
+function nextPerson(){
+    current = Math.floor(Math.random() * data.length);
+    clueIndex = 0;
+
+    const item = data[current];
+
+    item.category = getCategory(item.answer);
+    item.image = getImage(item.category);
+
+    applyStyle(item);
+
+    document.getElementById("clue").innerText = "New person loaded!";
+    document.getElementById("answer").innerText = "";
+
+    const img = document.getElementById("image");
+    img.classList.remove("show");
+}
+</script>
+<footer class="footer">
+  <p>
+  © 2026 James Wynne - 
+  <a href="mailto:jiwynne72@gmail.com" style="color:#06d6a0;">email</a> - 
+  <a href="https://jwynne.wixsite.com/english" style="color:#06d6a0;" target="_blank">website</a>
+</p>
+</footer>
+</body>
+</html>

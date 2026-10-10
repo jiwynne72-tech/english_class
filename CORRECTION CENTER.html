@@ -1,0 +1,469 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Correction Center</title>
+
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column; /* Stack container and footer */
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(-45deg, #667eea, #764ba2, #6dd5ed, #2193b0);
+  background-size: 400% 400%;
+  animation: bg 12s ease infinite;
+}
+
+
+.image-placeholder {
+  width: 100%;
+  height: 200px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #888;
+  font-style: italic;
+  border: 2px dashed #ccc;
+}
+
+/* Animation for fading in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-active {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Ensure the imageBox starts invisible for the script to handle */
+#imageBox { 
+  display: block; /* Changed from none to block */
+  margin-top: 15px; 
+}
+
+
+@keyframes bg {
+  0% {background-position: 0% 50%;}
+  50% {background-position: 100% 50%;}
+  100% {background-position: 0% 50%;}
+}
+
+/* SCREENS */
+.screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: #111;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+}
+
+.hidden { display: none; }
+
+/* BUTTONS */
+button {
+  padding: 14px 20px;
+  margin: 6px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  font-size: clamp(14px, 3.5vw, 18px);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#startBtn { background: #e67e22; color: white; }
+.modeBtn { background: #3498db; color: white; }
+
+#grammarBtn { background: #3498db; color: white; }
+#factBtn { background: #e67e22; color: white; }
+
+/* ADJUSTED BUTTON COLORS */
+#nextBtn { background: #808080; color: white; }
+#homeBtn { background: #808080; color: white; }
+
+#nextBtn:hover, #homeBtn:hover {
+  background: #555555;
+}
+
+/* CONTAINER */
+.container {
+  background: white;
+  width: 95%;
+  max-width: 800px;
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  margin-bottom: 20px; /* Space for footer */
+}
+
+/* TEXT */
+#text {
+  font-size: clamp(18px, 4vw, 26px);
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 10px; /* Reduced from 20px to tighten the gap */
+  min-height: 60px;    /* Reduced from 120px to remove the empty space */
+  color: #333;
+}
+
+/* TIMER */
+#timer {
+  font-size: clamp(16px, 3.5vw, 22px);
+  margin-bottom: 10px;
+  color: black;
+}
+
+#timer.warning {
+  color: red;
+}
+
+/* HIGHLIGHTS */
+.highlight-grammar { color: #3498db; font-weight: 900; }
+.highlight-fact { color: #e67e22; font-weight: 900; }
+
+/* IMAGE */
+#imageBox { 
+  display: block; 
+  margin-top: 15px;
+  opacity: 0; /* Starts at 0 so it can fade in via the animation class */
+}
+
+/* FOOTER STYLES */
+.footer {
+  width: 100%;
+  text-align: center;
+  color: white;
+  padding: 10px 0;
+  font-size: 7pt; /* Font size set to 7pt */
+}
+.footer a {
+  color: #ddd;
+  text-decoration: underline;
+}
+
+/* MOBILE IMPROVEMENTS */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+    border-radius: 12px;
+  }
+  button {
+    width: 100%;
+    margin: 8px 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="introScreen" class="screen">
+  <div>
+    <h1>WELCOME TO THE CORRECTION CENTER!</h1>
+    <p style="font-size: clamp(16px, 3vw, 20px); max-width: 80%; margin: 0 auto 20px auto; color: #ddd;">
+      In this game you will see a series of statements.<br> Each statement contains one factual and one grammar mistake. <br>
+      The question is: <strong>'Can You Find Them?'</strong><br>.... ARE YOU READY?
+    </p><p style="font-weight: 600; color: #555; margin-bottom: 15px; font-size: 0.9rem;">
+  </p>  
+    <button id="startBtn">START</button>
+  </div>
+</div>
+
+<div id="modeScreen" class="screen hidden">
+  <div>
+    <h2>Select Mode</h2>
+    <button class="modeBtn">Easy</button>
+    <button class="modeBtn">Hard</button>
+  </div>
+</div>
+
+<div class="container hidden">
+  <div id="timer">⏱ 15s</div>
+
+  <div id="text">Choose a mode</div>
+    <p style="font-weight: 600; color: #555; margin-bottom: 15px; font-size: 0.9rem;">
+    <i>Identify the grammar and factual mistakes.<br> 
+    Click the buttons to check your answers.</i>
+  </p>
+  <button id="grammarBtn">Grammar</button>
+  <button id="factBtn">Fact</button>
+  <br>
+  <button id="nextBtn">Next</button>
+  <button id="homeBtn">Home</button>
+
+  <div id="imageBox">
+    <img id="image">
+  </div>
+</div>
+
+<footer class="footer">
+<p>
+  © 2026 James Wynne - 
+  <a href="mailto:jiwynne72@gmail.com" style="color:#06d6a0;">email</a> - 
+  <a href="https://jwynne.wixsite.com/english" style="color:#06d6a0;" target="_blank">website</a>
+</p>
+</footer>
+
+<script>
+// 🔊 SOUND
+const sounds = {
+  click: new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3"),
+  reveal: new Audio("https://www.soundjay.com/buttons/sounds/button-09.mp3"),
+  timeup: new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3")
+};
+
+const easyData = [
+  { text: `Isaac Newton saw a <span class="fact">pear</span> fall from a tree, and it <span class="grammar">inspire</span> him to begin thinking about gravity and motion.`, img: "https://images.unsplash.com/photo-1568386453619-84c39639c4a9?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Earth is the <span class="fact">largest</span> planet in our solar system and <span class="grammar">have</span> a single moon that orbits it.`, img: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=800&q=80" },
+  { text: `Mars is known as the <span class="fact">blue</span> planet and <span class="grammar">have</span> been studied by many space missions.`, img: "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=800&q=80" },
+  { text: `Fish can breathe on <span class="fact">land</span> and <span class="grammar">lives</span> in water using their gills.`, img: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Statue of Liberty is located in <span class="fact">London</span> and <span class="grammar">stand</span> as a symbol of freedom.`, img: "https://images.unsplash.com/photo-1502104034360-73176bb1e92e?auto=format&fit=crop&w=800&q=80" },
+  { text: `Elephants are the <span class="fact">smallest</span> land animals and <span class="grammar">weigh</span> several tons.`, img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human body <span class="grammar">contain</span> around <span class="fact">100</span> muscles that help with movement.`, img: "https://images.unsplash.com/photo-1532634896-267095c6d9a3?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Atlantic Ocean is the <span class="fact">largest</span> ocean and <span class="grammar">cover</span> a vast area of Earth.`, img: "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?auto=format&fit=crop&w=800&q=80" },
+  { text: `Bees produce <span class="fact">milk</span> and <span class="grammar">helps</span> pollinate plants.`, img: "https://images.unsplash.com/photo-1581447110850-2508118029e2?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Moon revolves around the <span class="fact">Sun</span> and <span class="grammar">take</span> about a month to orbit Earth.`, img: "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=800&q=80" },
+  { text: `Humans have <span class="fact">four</span> lungs and <span class="grammar">use</span> them to breathe oxygen.`, img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80" },
+  { text: `Chocolate is made from <span class="fact">wheat</span> and <span class="grammar">comes</span> in many different forms.`, img: "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Sahara Desert is the <span class="fact">wettest</span> place on Earth and <span class="grammar">receive</span> a lot of rain.`, img: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=800&q=80" },
+  { text: `Birds have <span class="fact">teeth</span> and <span class="grammar">use</span> them to chew food.`, img: "https://images.unsplash.com/photo-1444464666168-49d633b867ad?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human eye can see in <span class="fact">complete darkness</span> and <span class="grammar">detected</span> all colours clearly.`, img: "https://images.unsplash.com/photo-1544485340-799fc4536415?auto=format&fit=crop&w=800&q=80" },
+  { text: `Venus is the <span class="fact">coldest</span> planet and <span class="grammar">have</span> thick clouds.`, img: "https://images.unsplash.com/photo-1614313913007-2b4ae8ce32d6?auto=format&fit=crop&w=800&q=80" },
+  { text: `Trees produce <span class="fact">helium</span> and <span class="grammar">helps</span> clean the air.`, img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Eiffel Tower is in <span class="fact">Rome</span> and <span class="grammar">attract</span> many visitors.`, img: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&w=800&q=80" },
+  { text: `A week has <span class="fact">five</span> days and <span class="grammar">include</span> weekends.`, img: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human heart is in the <span class="fact">head</span> and <span class="grammar">pump</span> blood around the body.`, img: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Cats are the only <span class="fact">cold blooded mammals</span> and <span class="grammar">lays</span> eggs to reproduce.`, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80" },
+  { text: `Rain <span class="fact">falls upwards</span> and <span class="grammar">form</span> clouds in the sky.`, img: "https://images.unsplash.com/photo-1534274988757-a28bf1a539d7?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Sun rises in the <span class="fact">west</span> and <span class="grammar">set</span> in the east.`, img: "https://images.unsplash.com/photo-1470252649358-96957c053e9a?auto=format&fit=crop&w=800&q=80" },
+  { text: `Cars run on <span class="fact">water</span> and <span class="grammar">use</span> engines to move.`, img: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Snow is <span class="fact">hot</span> and <span class="grammar">feel</span> warm to the touch.`, img: "https://images.unsplash.com/photo-1491002052546-bf38f186af56?auto=format&fit=crop&w=800&q=80" },
+  { text: `The ocean is made of <span class="fact">fresh water</span> and <span class="grammar">contain</span> many fish.`, img: "https://images.unsplash.com/photo-1439405326854-014607f694d7?auto=format&fit=crop&w=800&q=80" },
+  { text: `A circle has <span class="fact">corners</span> and <span class="grammar">have</span> straight edges.`, img: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80" },
+  { text: `Fire is <span class="fact">warm</span> and <span class="grammar">produce</span> no heat.`, img: "https://images.unsplash.com/photo-1481349518771-20055b2a7b24?auto=format&fit=crop&w=800&q=80" },
+  { text: `Some humans can breathe <span class="fact">underwater</span> and <span class="grammar">survival</span> without oxygen.`, img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80" },
+  { text: `The sky is <span class="fact">green</span> and <span class="grammar">look</span> bright during the day.`, img: "https://images.unsplash.com/photo-1532978379173-523e16f371f2?auto=format&fit=crop&w=800&q=80" },
+  { text: `The capital of France is <span class="fact">Lyon</span>, and it <span class="grammar">are</span> famous for landmarks like the Eiffel Tower.`, img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80" },
+  { text: `Water boils at <span class="fact">90</span> degrees Celsius and <span class="grammar">begin</span> to turn into steam when heated.`, img: "https://images.unsplash.com/photo-1542103551-698d93e84646?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Earth <span class="grammar">orbit</span> the <span class="fact">Moon</span> once every year, creating the seasons.`, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80" },
+  { text: `Shakespeare wrote many plays and often <span class="grammar">explore</span> themes of love and power in works like <span class="fact">Dracula</span>.`, img: "https://images.unsplash.com/photo-1583345227144-83540fef04b9?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Amazon River is the <span class="fact">longest</span> river and <span class="grammar">support</span> a large ecosystem.`, img: "https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80" },
+  { text: `Mount Everest is in <span class="fact">India</span> and attracts climbers who <span class="grammar">wants</span> to reach the top.`, img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human body <span class="grammar">have</span> <span class="fact">506</span> bones that help support movement.`, img: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Light travels <span class="grammar">slowers</span> than <span class="fact">sound</span>, which explains lightning delays.`, img: "https://images.unsplash.com/photo-1472141521881-95d0e87e2e39?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Great Wall of China <span class="grammar">stretch</span> thousands of miles across the country and ends in <span class="fact">Russia</span>.`, img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Sun is a <span class="fact">planet</span> and <span class="grammar">provide</span> light and heat to Earth.`, img: "https://images.unsplash.com/photo-1529788295308-1eace6f67388?auto=format&fit=crop&w=800&q=80" },
+  { text: `Penguins can <span class="fact">fly</span> short distances and <span class="grammar">lives</span> in cold regions.`, img: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?auto=format&fit=crop&w=800&q=80" },
+  { text: `Einstein developed the theory of <span class="fact">evolution</span> and <span class="grammar">change</span> science.`, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" }
+];
+
+const hardData = [
+  { text: `Isaac Newton observed a <span class="fact">pear</span> falling from a tree, which led him to develop ideas about gravity that <span class="grammar">was</span> later published in his work.`, img: "https://images.unsplash.com/photo-1568386453619-84c39639c4a9?auto=format&fit=crop&w=800&q=80" },
+  { text: `The capital of France is <span class="fact">Lyon</span>, which <span class="grammar">have</span> long been associated with art and culture.`, img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80" },
+  { text: `Water, which boils at <span class="fact">90</span> degrees Celsius, <span class="grammar">change</span> into steam when enough heat is applied.`, img: "https://images.unsplash.com/photo-1542103551-698d93e84646?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Earth <span class="grammar">orbit</span> the <span class="fact">Moon</span>, completing this motion once per year.`, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80" },
+  { text: `Shakespeare, who wrote <span class="fact">Hamlet</span>, often <span class="grammar">explore</span> themes that remain relevant today.`, img: "https://images.unsplash.com/photo-1583345227144-83540fef04b9?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Amazon River, which <span class="grammar">support</span> diverse ecosystems, is considered the <span class="fact">longest river</span>.`, img: "https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80" },
+  { text: `Mount Everest is in <span class="fact">India</span>, attracting climbers who <span class="grammar">is</span> determined to reach the top.`, img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human body, which <span class="grammar">have</span> <span class="fact">706 bones</span>, relies on them for movement and protection.`, img: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Light travels <span class="grammar">slower</span> than <span class="fact">sound</span>, which explains thunder delays.`, img: "https://images.unsplash.com/photo-1472141521881-95d0e87e2e39?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Earth, the <span class="fact">largest</span> planet, <span class="grammar">have</span> one natural satellite orbiting it.`, img: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=800&q=80" },
+  { text: `Mars, known as the <span class="fact">blue</span> planet, <span class="grammar">have</span> been explored extensively.`, img: "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=800&q=80" },
+  { text: `Fish, which can breathe on <span class="fact">land</span>, <span class="grammar">lives</span> in aquatic environments.`, img: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Statue of Liberty, located in <span class="fact">London</span>, <span class="grammar">stand</span> as a symbol of freedom.`, img: "https://images.unsplash.com/photo-1502104034360-73176bb1e92e?auto=format&fit=crop&w=800&q=80" },
+  { text: `Elephants, the <span class="fact">slowest land animals</span>, <span class="grammar">weigh</span> several tons.`, img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human body, which <span class="grammar">contain</span> around <span class="fact">100 muscles</span>, relies on them for movement.`, img: "https://images.unsplash.com/photo-1532634896-267095c6d9a3?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Atlantic Ocean, the <span class="fact">largest ocean</span>, <span class="grammar">cover</span> much of Earth.`, img: "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?auto=format&fit=crop&w=800&q=80" },
+  { text: `Bees, which produce a type of resin <span class="fact">milk</span>, <span class="grammar">helps</span> pollinate plants.`, img: "https://images.unsplash.com/photo-1581447110850-2508118029e2?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Moon revolves around the <span class="fact">Sun</span> and <span class="grammar">take</span> about a month to orbit Earth.`, img: "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=800&q=80" },
+  { text: `Humans, who have <span class="fact">four</span> lungs, <span class="grammar">uses</span> them to breathe.`, img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80" },
+  { text: `Chocolate, made from <span class="fact">wheat</span>, <span class="grammar">comes</span> in various forms.`, img: "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Sahara Desert, the <span class="fact">wettest place on Earth</span>, <span class="grammar">receive</span> significant rainfall.`, img: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=800&q=80" },
+  { text: `Birds, which have <span class="fact">teeth</span>, <span class="grammar">use</span> them to chew food.`, img: "https://images.unsplash.com/photo-1444464666168-49d633b867ad?auto=format&fit=crop&w=800&q=80" },
+  { text: `The human eye, which can see perfectly in <span class="fact">darkness</span>, <span class="grammar">detect</span> all colours clearly.`, img: "https://images.unsplash.com/photo-1544485340-799fc4536415?auto=format&fit=crop&w=800&q=80" },
+  { text: `Venus, the <span class="fact">coldest planet</span>, <span class="grammar">have</span> a dense atmosphere.`, img: "https://images.unsplash.com/photo-1614313913007-2b4ae8ce32d6?auto=format&fit=crop&w=800&q=80" },
+  { text: `Trees, which produce <span class="fact">helium phosphate</span>, <span class="grammar">helps</span> clean the air.`, img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Eiffel Tower, in <span class="fact">Rome</span>, <span class="grammar">attract</span> millions of visitors.`, img: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&w=800&q=80" },
+  { text: `A week, which has <span class="fact">five</span> days, <span class="grammar">include</span> weekends.`, img: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&w=800&q=80" },
+  { text: `The heart, located in the <span class="fact">head</span>, <span class="grammar">pump</span> blood.`, img: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Cats, which are Earth's only <span class="fact">cold-blooded mammals</span>, <span class="grammar">lay</span> eggs.`, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80" },
+  { text: `Rain, which falls <span class="fact">upwards</span>, <span class="grammar">form</span> clouds.`, img: "https://images.unsplash.com/photo-1534274988757-a28bf1a539d7?auto=format&fit=crop&w=800&q=80" },
+  { text: `Cars, which run on <span class="fact">water</span>, <span class="grammar">use</span> engines.`, img: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Snow, which can be <span class="fact">warm</span>, <span class="grammar">feel</span> hot.`, img: "https://images.unsplash.com/photo-1491002052546-bf38f186af56?auto=format&fit=crop&w=800&q=80" },
+  { text: `The ocean, made of <span class="fact">fresh water</span>, <span class="grammar">contain</span> fish.`, img: "https://images.unsplash.com/photo-1439405326854-014607f694d7?auto=format&fit=crop&w=800&q=80" },
+  { text: `A circle, which has <span class="fact">corners</span>, <span class="grammar">are</span> a 360° circumference.`, img: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80" },
+  { text: `Fire, which is <span class="fact">tepid</span>, <span class="grammar">produce</span> no heat.`, img: "https://images.unsplash.com/photo-1481349518771-20055b2a7b24?auto=format&fit=crop&w=800&q=80" },
+  { text: `Men, who can <span class="fact">breathe underwater</span>, <span class="grammar">survives</span> without oxygen.`, img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80" },
+  { text: `The sky, which is <span class="fact">green</span>, <span class="grammar">look</span> bright.`, img: "https://images.unsplash.com/photo-1532978379173-523e16f371f2?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Great Wall of China, which <span class="grammar">stretch</span> thousands of miles, was built for defence and ends in <span class="fact">Russia</span>.`, img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Sun, a <span class="fact">planet</span>, <span class="grammar">provide</span> essential energy for Earth.`, img: "https://images.unsplash.com/photo-1529788295308-1eace6f67388?auto=format&fit=crop&w=800&q=80" },
+  { text: `Penguins, which can <span class="fact">fly</span>, <span class="grammar">lives</span> in cold climates.`, img: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Pacific Ocean, the <span class="fact">smallest ocean</span>, <span class="grammar">cover</span> much of Earth.`, img: "https://images.unsplash.com/photo-1439405326854-014607f694d7?auto=format&fit=crop&w=800&q=80" },
+  { text: `Einstein developed the theory of <span class="fact">evolution</span>, which <span class="grammar">change</span> physics.`, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Moon, made of <span class="fact">gas</span>, <span class="grammar">reflect</span> sunlight at night.`, img: "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=800&q=80" },
+  { text: `A triangle, which has <span class="fact">four</span> sides, <span class="grammar">is have</span> three angles.`, img: "https://images.unsplash.com/photo-1518331647614-7a1f04cd34cf?auto=format&fit=crop&w=800&q=80" },
+  { text: `Dogs, being <span class="fact">cold-blooded</span>, <span class="grammar">needs</span> external heat sources.`, img: "https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Nile, flowing through <span class="fact">Asia</span>, <span class="grammar">pass</span> several regions.`, img: "https://images.unsplash.com/photo-1544131411-ef94669e2f7a?auto=format&fit=crop&w=800&q=80" },
+  { text: `Plants, which produce oxygen, <span class="grammar">creates</span> energy from sunlight and <span class="fact">magic</span>.`, img: "https://images.unsplash.com/photo-1416874334013-99168016dd21?auto=format&fit=crop&w=800&q=80" },
+  { text: `The brain, located in the <span class="fact">stomach</span>, <span class="grammar">control</span> body functions.`, img: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=800&q=80" },
+  { text: `Jupiter, the <span class="fact">smallest planet</span>, <span class="grammar">have</span> strong gravity.`, img: "https://images.unsplash.com/photo-1614314104100-8488e404b901?auto=format&fit=crop&w=800&q=80" },
+  { text: `Ice melts at <span class="fact">10</span> degrees and <span class="grammar">turn</span> into water.`, img: "https://images.unsplash.com/photo-1551717725-6351717208d1?auto=format&fit=crop&w=800&q=80" },
+  { text: `Spiders, with <span class="fact">six</span> legs, <span class="grammar">is belong</span> to insects.`, img: "https://images.unsplash.com/photo-1533038590840-1cde6e668a91?auto=format&fit=crop&w=800&q=80" },
+  { text: `The Sahara, Earth's hottest desert, <span class="grammar">receive</span> heavy <span class="fact">rainfall once a year</span>.`, img: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=800&q=80" },
+  { text: `Birds, which are <span class="fact">mammals</span>, <span class="grammar">feed</span> their young milk.`, img: "https://images.unsplash.com/photo-1444464666168-49d633b867ad?auto=format&fit=crop&w=800&q=80" },
+  { text: `Sound travels <span class="fact">faster than light</span> and <span class="grammar">depend</span> on medium.`, img: "https://images.unsplash.com/photo-1478737270239-2fccd27ee1f3?auto=format&fit=crop&w=800&q=80" },
+  { text: `The heart pumps blood and <span class="grammar">circulate</span> <span class="fact">hydrogen</span>.`, img: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80" },
+  { text: `Gold, which <span class="grammar">are</span> valuable, is widely used because it has a unique <span class="fact">blue colour</span>.`, img: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=800&q=80" },
+  { text: `The internet began in <span class="fact">1910</span> and <span class="grammar">become</span> widespread later.`, img: "https://images.unsplash.com/photo-1509191432302-c23fd362c2aa?auto=format&fit=crop&w=800&q=80" },
+  { text: `Rainbows, which appear at <span class="fact">night</span>, <span class="grammar">is form</span> by light refraction.`, img: "https://images.unsplash.com/photo-1469533778471-92a68acc3633?auto=format&fit=crop&w=800&q=80" }
+];
+
+
+let data = [];
+let pool = [];
+let timer = null;
+let timeLeft = 15;
+
+function startTimer() {
+  stopTimer();
+  timeLeft = 15;
+  updateTimer();
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 5) document.getElementById("timer").classList.add("warning");
+    if (timeLeft <= 0) {
+      stopTimer();
+      sounds.timeup.play().catch(()=>{});
+      setTimeout(nextQuestion, 1200);
+    }
+  }, 1000);
+}
+
+function stopTimer() { if (timer) clearInterval(timer); }
+
+function updateTimer() {
+  const el = document.getElementById("timer");
+  el.innerText = "⏱ " + timeLeft + "s";
+  el.classList.remove("warning");
+}
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  sounds.click.play().catch(()=>{});
+  document.getElementById("introScreen").classList.add("hidden");
+  document.getElementById("modeScreen").classList.remove("hidden");
+});
+
+document.querySelectorAll(".modeBtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const mode = btn.textContent.toLowerCase();
+    selectMode(mode);
+  });
+});
+
+function selectMode(mode) {
+  sounds.click.play().catch(()=>{});
+  data = mode === "easy" ? easyData : hardData;
+  pool = [...data];
+  document.getElementById("modeScreen").classList.add("hidden");
+  document.querySelector(".container").classList.remove("hidden");
+  
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (pool.length === 0) pool = [...data];
+  const index = Math.floor(Math.random() * pool.length);
+  const item = pool.splice(index, 1)[0];
+  loadQuestion(item);
+}
+
+function loadQuestion(item) {
+  const imageBox = document.getElementById("imageBox");
+  const textEl = document.getElementById("text");
+  const imageEl = document.getElementById("image");
+
+  // 1. RESET: Remove any old placeholders and show the image element again
+  const oldPlaceholder = imageBox.querySelector(".image-placeholder");
+  if (oldPlaceholder) oldPlaceholder.remove();
+  imageEl.style.display = "block"; 
+  
+  // 2. Set the text
+  textEl.innerHTML = item.text;
+  
+  // 3. Set the image source
+  if (item.img) {
+    imageEl.src = item.img;
+    imageEl.style.display = "block"; 
+
+    imageEl.onerror = function() {
+      this.style.display = "none"; 
+      const placeholder = document.createElement("div");
+      placeholder.className = "image-placeholder";
+      placeholder.innerHTML = "<span>📷 Image currently unavailable</span>";
+      imageBox.appendChild(placeholder);
+    };
+  }
+  
+  // 4. Trigger the fade-in animation
+  imageBox.style.display = "block";
+  imageBox.classList.remove("fade-in-active");
+  
+  // Force a browser reflow so the animation restarts
+  void imageBox.offsetWidth; 
+  
+  imageBox.classList.add("fade-in-active");
+  
+  startTimer();
+} 
+
+function reveal() {
+  sounds.reveal.play().catch(()=>{});
+  stopTimer();
+  // The image is already visible, so we don't need to change display here
+}
+
+document.getElementById("grammarBtn").onclick = () => {
+  sounds.click.play().catch(()=>{});
+  document.querySelectorAll(".grammar").forEach(el => el.classList.add("highlight-grammar"));
+  reveal();
+};
+
+document.getElementById("factBtn").onclick = () => {
+  sounds.click.play().catch(()=>{});
+  document.querySelectorAll(".fact").forEach(el => el.classList.add("highlight-fact"));
+  reveal();
+};
+
+document.getElementById("nextBtn").onclick = () => {
+  sounds.click.play().catch(()=>{});
+  nextQuestion();
+};
+
+document.getElementById("homeBtn").onclick = () => {
+  stopTimer();
+  document.getElementById("modeScreen").classList.add("hidden");
+  document.getElementById("introScreen").classList.remove("hidden");
+  document.querySelector(".container").classList.add("hidden"); 
+  
+  document.getElementById("text").innerHTML = "Choose a mode";
+};
+</script>
+</body>
+</html>

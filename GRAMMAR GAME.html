@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Grammar Pro</title>
+    <style>
+        :root {
+            --bg: #050507;
+            --card-bg: #0f1014;
+            --text: #f1f5f9;
+            --border: #27272a;
+            --theme-color: #6366f1;
+            --theme-glow: rgba(99, 102, 241, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column; /* Stack container and footer */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background 0.5s ease;
+        }
+
+        body.theme-prepositions { --theme-color: #10b981; --theme-glow: rgba(16, 185, 129, 0.25); }
+        body.theme-conditionals { --theme-color: #3b82f6; --theme-glow: rgba(59, 130, 246, 0.25); }
+        body.theme-adverbs { --theme-color: #f59e0b; --theme-glow: rgba(245, 158, 11, 0.25); }
+
+        #game-container {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 28px;
+            box-shadow: 0 0 50px -10px var(--theme-glow), 0 0 0 1px var(--border);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+            transition: box-shadow 0.5s ease;
+            margin-bottom: 20px; /* Space for the footer */
+        }
+
+        /* Footer Style */
+        .footer {
+            width: 100%;
+            text-align: center;
+            color: #71717a;
+            font-size: 7pt; /* Your requested font size */
+            padding-bottom: 15px;
+        }
+        .footer a {
+            color: var(--theme-color);
+            text-decoration: none;
+        }
+
+        /* MOBILE FIX */
+        @media (max-width: 600px) {
+            #game-container {
+                padding: 5rem 1.5rem 2rem 1.5rem;
+            }
+            .nav-btn {
+                top: 15px;
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
+            h1 { font-size: 2rem; margin-top: 10px; }
+            .question-box { font-size: 1.3rem; margin: 30px 0; }
+            .options-grid { grid-template-columns: 1fr !important; }
+        }
+
+        .screen { display: none; animation: fadeIn 0.5s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { font-size: 2.8rem; margin-bottom: 0.5rem; letter-spacing: -1px; }
+
+        .nav-btn { 
+            position: absolute; top: 25px; border: 1px solid var(--border); padding: 10px 18px; 
+            border-radius: 12px; cursor: pointer; color: #a1a1aa; background: #18181b; 
+            font-size: 0.85rem; transition: all 0.2s; z-index: 10;
+        }
+        .home-btn { left: 25px; }
+        .rule-btn { right: 25px; color: var(--theme-color); border-color: var(--theme-color); }
+        .nav-btn:hover { background: #27272a; color: white; }
+
+        .menu-grid { display: grid; gap: 15px; margin-top: 40px; }
+        .menu-card { 
+            padding: 25px; border-radius: 16px; border: 1px solid var(--border); cursor: pointer; transition: 0.3s;
+            background: #18181b; font-size: 1.3rem; font-weight: 500; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .menu-card:hover { border-color: var(--theme-color); transform: translateX(10px); background: #222226; }
+
+        .question-box { font-size: 1.7rem; margin: 50px 0; min-height: 100px; line-height: 1.4; color: #fff; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        button.opt { 
+            background: #18181b; border: 1px solid var(--border); padding: 20px; border-radius: 14px; 
+            font-size: 1.1rem; cursor: pointer; color: var(--text); transition: 0.2s;
+        }
+        button.opt:hover { border-color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
+        button.opt.correct { background: #064e3b; border-color: #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        button.opt.wrong { background: #450a0a; border-color: #ef4444; }
+
+        .action-bar { display: flex; gap: 15px; margin-top: 40px; }
+        .skip-btn { flex: 1; background: transparent; color: #71717a; border: 1px solid var(--border); padding: 16px; border-radius: 14px; cursor: pointer; }
+        .next-btn { 
+            flex: 2; background: var(--theme-color); color: white; border: none; padding: 16px; 
+            border-radius: 14px; cursor: pointer; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 15px var(--theme-glow);
+        }
+
+        #rule-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px);
+        }
+        .rule-content { 
+            background: #18181b; padding: 40px; border-radius: 24px; border: 2px solid var(--theme-color); 
+            max-width: 450px; text-align: left; box-shadow: 0 0 40px var(--theme-glow);
+        }
+    </style>
+</head>
+<body id="body-bg">
+
+    <div id="game-container">
+        <button class="nav-btn home-btn" onclick="location.reload()">🏠 HOME</button>
+        
+        <div id="intro-screen" class="screen active">
+            <h1>Grammar Center</h1>
+            <p style="color: #71717a; font-size: 1.1rem;">Choose a category and get started: no pressure, just progress.</p>
+            <div class="menu-grid">
+                <div class="menu-card" style="border-left: 5px solid #10b981;" onclick="startQuiz('prepositions')">Prepositions <span>➔</span></div>
+                <div class="menu-card" style="border-left: 5px solid #3b82f6;" onclick="startQuiz('conditionals')">Conditionals <span>➔</span></div>
+                <div class="menu-card" style="border-left: 5px solid #f59e0b;" onclick="startQuiz('adverbs')">Adverbs <span>➔</span></div>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="screen">
+            <button class="nav-btn rule-btn" onclick="toggleRule(true)">HELP</button>
+            <div id="topic-label" style="color: var(--theme-color); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem;">TOPIC</div>
+            <div class="question-box" id="q-text"></div>
+            <div class="options-grid" id="options"></div>
+            <div class="action-bar">
+                <button class="skip-btn" onclick="nextQuestion()">Skip Question</button>
+                <button id="next-btn" class="next-btn" style="display:none;" onclick="nextQuestion()">Next Question ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+<p>
+  © 2026 James Wynne - 
+  <a href="mailto:jiwynne72@gmail.com" style="color:#06d6a0;">email</a> - 
+  <a href="https://jwynne.wixsite.com/english" style="color:#06d6a0;" target="_blank">website</a>
+</p>
+    </footer>
+
+    <div id="rule-overlay" onclick="toggleRule(false)">
+        <div class="rule-content">
+            <h2 id="rule-title" style="color: var(--theme-color); margin-top: 0; font-size: 1.8rem;"></h2>
+            <div id="rule-desc" style="line-height: 1.7; font-size: 1.1rem; color: #d1d5db;"></div>
+            <button class="next-btn" style="width:100%; margin-top: 25px;" onclick="toggleRule(false)">Got it!</button>
+        </div>
+    </div>
+
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(freq, type, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    const db = {
+        prepositions: {
+            rule: "• <b>IN:</b> Enclosed spaces, cities, months.<br>• <b>ON:</b> Surfaces, days, dates.<br>• <b>AT:</b> Specific times, exact spots.<br>• <b>BY:</b> Near or not later than.",
+            questions: [
+                { q: "The meeting is ___ Monday.", o: ["on", "at", "in", "by"], a: "on" },
+                { q: "He'll be here ___ 5 minutes.", o: ["in", "at", "on", "to"], a: "in" },
+                { q: "I meet my friends ___ the cafe.", o: ["at", "on", "to", "for"], a: "at" },
+                { q: "She put the book ___ the shelf.", o: ["on", "at", "in", "by"], a: "on" },
+                { q: "We are traveling ___ train.", o: ["by", "on", "in", "with"], a: "by" },
+                { q: "I was born ___ 1995.", o: ["in", "on", "at", "by"], a: "in" },
+                { q: "The keys are ___ the drawer.", o: ["in", "on", "at", "by"], a: "in" },
+                { q: "I'll see you ___ noon.", o: ["at", "in", "on", "to"], a: "at" },
+                { q: "They arrived ___ Paris yesterday.", o: ["in", "at", "on", "to"], a: "in" },
+                { q: "The painting is ___ the wall.", o: ["on", "in", "at", "above"], a: "on" },
+                { q: "I am waiting ___ the bus stop.", o: ["at", "in", "on", "to"], a: "at" },
+                { q: "The store closes ___ midnight.", o: ["at", "in", "on", "by"], a: "at" },
+                { q: "We have a holiday ___ July.", o: ["in", "on", "at", "by"], a: "in" },
+                { q: "He sat ___ the chair.", o: ["on", "at", "in", "by"], a: "on" },
+                { q: "I sent the letter ___ post.", o: ["by", "at", "on", "in"], a: "by" },
+                { q: "The cat is hiding ___ the table.", o: ["under", "on", "at", "in"], a: "under" },
+                { q: "She lives ___ 42 Wallaby Way.", o: ["at", "in", "on", "by"], a: "at" },
+                { q: "I like to read ___ the morning.", o: ["in", "on", "at", "by"], a: "in" },
+                { q: "The party is ___ October 31st.", o: ["on", "in", "at", "by"], a: "on" },
+                { q: "I'll finish this ___ tomorrow.", o: ["by", "at", "on", "in"], a: "by" },
+                { q: "There is a fly ___ the ceiling.", o: ["on", "in", "at", "above"], a: "on" },
+                { q: "They are staying ___ a hotel.", o: ["at", "on", "in", "by"], a: "at" },
+                { q: "He walked ___ the bridge.", o: ["across", "at", "in", "on"], a: "across" },
+                { q: "The shop is ___ the pharmacy.", o: ["beside", "at", "on", "in"], a: "beside" },
+                { q: "I haven't seen her ___ Christmas.", o: ["since", "for", "at", "in"], a: "since" },
+                { q: "He has been sick ___ three days.", o: ["for", "since", "at", "in"], a: "for" },
+                { q: "The plane flew ___ the clouds.", o: ["above", "on", "at", "in"], a: "above" },
+                { q: "I am standing ___ my parents.", o: ["between", "among", "at", "in"], a: "between" },
+                { q: "The paper is ___ the bin.", o: ["in", "on", "at", "by"], a: "in" },
+                { q: "He poured water ___ the glass.", o: ["into", "on", "at", "in"], a: "into" },
+                { q: "We walked ___ the park.", o: ["through", "at", "on", "in"], a: "through" },
+                { q: "Wait ___ the end of the line.", o: ["at", "in", "on", "by"], a: "at" },
+                { q: "He leaned ___ the wall.", o: ["against", "on", "at", "in"], a: "against" },
+                { q: "She was born ___ a Friday.", o: ["on", "in", "at", "by"], a: "on" },
+                { q: "I'm going ___ London.", o: ["to", "at", "in", "on"], a: "to" }
+            ]
+        },
+        conditionals: {
+            rule: "• <b>Zero:</b> (If + Present, Present) - Facts.<br>• <b>1st:</b> (If + Present, Will) - Real Future.<br>• <b>2nd:</b> (If + Past, Would) - Dream/Imagine.<br>• <b>3rd:</b> (If + Had, Would Have) - Regrets.",
+            questions: [
+                { q: "If I ___ time, I will call you.", o: ["have", "had", "has", "will have"], a: "have" },
+                { q: "If I ___ you, I would study more.", o: ["were", "was", "am", "be"], a: "were" },
+                { q: "I would have passed if I ___.", o: ["had studied", "studied", "study", "would study"], a: "had studied" },
+                { q: "If you heat water to 100°C, it ___.", o: ["boils", "will boil", "boiled", "would boil"], a: "boils" },
+                { q: "If it rains, we ___ at home.", o: ["will stay", "stayed", "would stay", "stay"], a: "will stay" },
+                { q: "If I won the lottery, I ___ a boat.", o: ["would buy", "will buy", "bought", "buy"], a: "would buy" },
+                { q: "If she ___ earlier, she wouldn't have missed the bus.", o: ["had woken up", "woke up", "wakes up", "would wake up"], a: "had woken up" },
+                { q: "If you touch fire, you ___ burned.", o: ["get", "will get", "got", "would get"], a: "get" },
+                { q: "I ___ to the party if I'm not tired.", o: ["will go", "would go", "went", "go"], a: "will go" },
+                { q: "If they ___ harder, they would succeed.", o: ["tried", "try", "had tried", "would try"], a: "tried" },
+                { q: "If I ___ her address, I would have sent a card.", o: ["had known", "knew", "know", "would know"], a: "had known" },
+                { q: "Plants die if they ___ enough water.", o: ["don't get", "won't get", "didn't get", "wouldn't get"], a: "don't get" },
+                { q: "If he ___ the truth, he wouldn't be in trouble.", o: ["had told", "told", "tells", "will tell"], a: "had told" },
+                { q: "If I ___ a bird, I would fly away.", o: ["were", "was", "am", "will be"], a: "were" },
+                { q: "If you ___ ice, it melts.", o: ["heat", "will heat", "heated", "would heat"], a: "heat" },
+                { q: "I will be happy if you ___.", o: ["come", "came", "will come", "would come"], a: "come" },
+                { q: "If we ___ a map, we wouldn't be lost.", o: ["had", "have", "had had", "will have"], a: "had" },
+                { q: "She ___ have been late if she'd taken the train.", o: ["wouldn't", "won't", "didn't", "doesn't"], a: "wouldn't" },
+                { q: "If you mix red and blue, you ___ purple.", o: ["get", "will get", "got", "would get"], a: "get" },
+                { q: "If I ___ rich, I would travel the world.", o: ["were", "am", "will be", "had been"], a: "were" },
+                { q: "I ___ call you if I hear any news.", o: ["will", "would", "had", "am"], a: "will" },
+                { q: "If you ___ the cake, you would have liked it.", o: ["had tasted", "tasted", "taste", "will taste"], a: "had tasted" },
+                { q: "If I see him, I ___ him your message.", o: ["will give", "would give", "gave", "give"], a: "will give" },
+                { q: "If I ___ more time, I would learn French.", o: ["had", "have", "will have", "had had"], a: "had" },
+                { q: "If the sun ___ out, we'll go for a walk.", o: ["comes", "came", "will come", "would come"], a: "comes" },
+                { q: "He ___ have helped you if you'd asked.", o: ["would", "will", "did", "had"], a: "would" },
+                { q: "If you ___ study, you fail.", o: ["don't", "won't", "didn't", "wouldn't"], a: "don't" },
+                { q: "If I ___ you, I wouldn't do that.", o: ["were", "was", "am", "be"], a: "were" },
+                { q: "She would have arrived if the car ___.", o: ["hadn't broken", "didn't break", "doesn't break", "won't break"], a: "hadn't broken" },
+                { q: "If it ___ tomorrow, the game will be cancelled.", o: ["rains", "rained", "will rain", "would rain"], a: "rains" },
+                { q: "If I ___ my phone, I would have called.", o: ["had found", "found", "find", "will find"], a: "had found" },
+                { q: "I ___ buy that if I were you.", o: ["wouldn't", "won't", "don't", "didn't"], a: "wouldn't" },
+                { q: "If you ___ enough sleep, you feel tired.", o: ["don't get", "didn't get", "won't get", "wouldn't get"], a: "don't get" },
+                { q: "If we win, we ___ celebrate.", o: ["will", "would", "had", "are"], a: "will" },
+                { q: "I would have stayed if you ___ me.", o: ["had asked", "asked", "ask", "would ask"], a: "had asked" }
+            ]
+        },
+        adverbs: {
+            rule: "• <b>Still:</b> Continuing action.<br>• <b>Yet:</b> Expected in negatives/questions.<br>• <b>Already:</b> Earlier than expected.<br>• <b>Manner:</b> How something is done (e.g., quickly).",
+            questions: [
+                { q: "He hasn't finished the work ___.", o: ["yet", "still", "already", "soon"], a: "yet" },
+                { q: "They are ___ waiting for the bus.", o: ["still", "yet", "already", "never"], a: "still" },
+                { q: "She plays the violin ___.", o: ["beautifully", "beautiful", "beauty", "well"], a: "beautifully" },
+                { q: "I have ___ eaten my dinner.", o: ["already", "yet", "still", "ever"], a: "already" },
+                { q: "He drives very ___.", o: ["carefully", "careful", "care", "caring"], a: "carefully" },
+                { q: "Have you finished your homework ___?", o: ["yet", "still", "already", "ever"], a: "yet" },
+                { q: "I ___ go to the gym on Mondays.", o: ["usually", "usual", "use", "used"], a: "usually" },
+                { q: "She spoke ___ to the baby.", o: ["softly", "soft", "softness", "softer"], a: "softly" },
+                { q: "They have ___ seen that movie.", o: ["already", "yet", "still", "never"], a: "already" },
+                { q: "He is ___ working at 8 PM.", o: ["still", "yet", "already", "soon"], a: "still" },
+                { q: "The runner ran ___ to win.", o: ["fast", "fastly", "faster", "fastest"], a: "fast" },
+                { q: "I haven't visited London ___.", o: ["yet", "already", "still", "ever"], a: "yet" },
+                { q: "He answered the question ___.", o: ["correctly", "correct", "correction", "corrects"], a: "correctly" },
+                { q: "Are you ___ living in Spain?", o: ["still", "yet", "already", "ever"], a: "still" },
+                { q: "She sings ___.", o: ["well", "good", "better", "best"], a: "well" },
+                { q: "I've ___ finished my book!", o: ["already", "yet", "still", "soon"], a: "already" },
+                { q: "He walks ___ because of his leg.", o: ["slowly", "slow", "slowness", "slows"], a: "slowly" },
+                { q: "We haven't decided ___.", o: ["yet", "still", "already", "ever"], a: "yet" },
+                { q: "It is ___ raining outside.", o: ["still", "yet", "already", "never"], a: "still" },
+                { q: "She finished the race ___.", o: ["quickly", "quick", "quicker", "quickest"], a: "quickly" },
+                { q: "I have ___ been to Japan.", o: ["never", "yet", "still", "already"], a: "never" },
+                { q: "They arrived ___ for the meeting.", o: ["early", "earlyly", "earlier", "earliest"], a: "early" },
+                { q: "He talks ___ when he's nervous.", o: ["loudly", "loud", "loudness", "louder"], a: "loudly" },
+                { q: "Has the train left ___?", o: ["yet", "still", "already", "never"], a: "yet" },
+                { q: "She looks at him ___.", o: ["sadly", "sad", "sadness", "sadder"], a: "sadly" },
+                { q: "I ___ forget my keys.", o: ["often", "always", "never", "sometimes"], a: "often" },
+                { q: "He works ___ to support his family.", o: ["hard", "hardly", "harder", "hardest"], a: "hard" },
+                { q: "The children played ___ together.", o: ["happily", "happy", "happiness", "happier"], a: "happily" },
+                { q: "I'm ___ waiting for an answer.", o: ["still", "yet", "already", "soon"], a: "still" },
+                { q: "She dressed ___ for the gala.", o: ["elegantly", "elegant", "elegance", "elegancy"], a: "elegantly" },
+                { q: "We ___ see them these days.", o: ["rarely", "rare", "rareness", "rarer"], a: "rarely" },
+                { q: "He smiled ___ at the camera.", o: ["brightly", "bright", "brightness", "brighter"], a: "brightly" },
+                { q: "The rain fell ___ all night.", o: ["heavily", "heavy", "heaviness", "heavier"], a: "heavily" },
+                { q: "I haven't called him ___.", o: ["yet", "already", "still", "never"], a: "yet" },
+                { q: "She completed the task ___.", o: ["easily", "easy", "easiness", "easier"], a: "easily" }
+            ]
+        }
+    };
+
+    let activeQuestions = [];
+    let curIdx = 0;
+    let curCat = "";
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz(cat) {
+        playSound(440, 'sine', 0.1);
+        curCat = cat;
+        curIdx = 0;
+        document.getElementById('body-bg').className = 'theme-' + cat;
+        activeQuestions = shuffle([...db[cat].questions]);
+        document.getElementById('intro-screen').classList.remove('active');
+        document.getElementById('quiz-screen').classList.add('active');
+        loadQ();
+    }
+
+    function loadQ() {
+        const qData = activeQuestions[curIdx];
+        document.getElementById('q-text').innerText = qData.q;
+        document.getElementById('topic-label').innerText = curCat + " Module";
+        const optCont = document.getElementById('options');
+        optCont.innerHTML = "";
+        document.getElementById('next-btn').style.display = 'none';
+        const shuffledOptions = shuffle([...qData.o]);
+        shuffledOptions.forEach(opt => {
+            const b = document.createElement('button');
+            b.className = "opt";
+            b.innerText = opt;
+            b.onclick = () => check(b, opt, qData.a);
+            optCont.appendChild(b);
+        });
+    }
+
+    function check(btn, selected, correct) {
+        if (selected === correct) {
+            playSound(880, 'sine', 0.2);
+            btn.classList.add('correct');
+            document.getElementById('next-btn').style.display = 'block';
+            document.querySelectorAll('.opt').forEach(o => o.onclick = null);
+        } else {
+            playSound(150, 'sawtooth', 0.1);
+            btn.classList.add('wrong');
+        }
+    }
+
+    function nextQuestion() {
+        playSound(600, 'sine', 0.1);
+        curIdx++;
+        if (curIdx < activeQuestions.length) loadQ();
+        else {
+            alert("Module Finished!");
+            location.reload();
+        }
+    }
+
+    function toggleRule(show) {
+        if(show) {
+            playSound(500, 'square', 0.05);
+            document.getElementById('rule-title').innerText = curCat.toUpperCase() + " RULES";
+            document.getElementById('rule-desc').innerHTML = db[curCat].rule;
+        }
+        document.getElementById('rule-overlay').style.display = show ? 'flex' : 'none';
+    }
+</script>
+</body>
+</html>
