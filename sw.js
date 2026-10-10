@@ -2,7 +2,7 @@ const CACHE_NAME = 'ENG-QUIZ-V2';
 const ASSETS = [
   './index.html',
   './manifest.json',
-  './logo.png'
+  './icon.png'
 ];
 
 self.addEventListener('install', (event) => {
