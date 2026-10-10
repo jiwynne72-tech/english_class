@@ -15,6 +15,10 @@
             --text: #f8fafc;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-grad);
@@ -26,6 +30,7 @@
             min-height: 100vh;
             padding: 40px 20px;
             overflow-x: hidden;
+            position: relative;
         }
 
         /* Decorative glowing background elements */
@@ -244,6 +249,10 @@
             <h3>What Happened Here?</h3>
             <p>Analyze and resolve complex sentence errors.</p>
         </a>
+        <a href="TRUE FALSE.html" class="card">
+            <h3>True or False?</h3>
+            <p>Test reading comprehension with real-world facts and myths.</p>
+        </a>
     </div>
 
     <footer class="footer">
@@ -253,8 +262,10 @@
     </footer>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            navigator.serviceWorker.register('sw.js').catch(err => {
+                console.log('Service worker registration skipped:', err);
+            });
         }
 
         let deferredPrompt;

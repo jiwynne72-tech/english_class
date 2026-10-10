@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Comprehension Challenge</title>
+
+<style>
+    :root {
+        --primary: #6C63FF;
+        --secondary: #FF6584;
+        --success: #4CAF50;
+        --neutral: #636E72;
+        --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+        --card-bg: #ffffff;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg-gradient);
+        margin: 0;
+        padding: 16px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #2D3436;
+    }
+
+    #container {
+        max-width: 800px;
+        width: 100%;
+        background: var(--card-bg);
+        padding: 30px 24px;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        animation: fadeIn 0.4s ease-out;
+        margin-bottom: 40px; /* Leave space for fixed footer */
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    h1 { 
+        font-size: clamp(24px, 5vw, 32px); 
+        color: #2D3436; 
+        margin: 0 0 8px 0; 
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    h2 { 
+        font-size: clamp(15px, 3.5vw, 18px); 
+        color: #636E72; 
+        margin-bottom: 24px; 
+        font-weight: normal; 
+        text-align: center;
+    }
+
+    /* IMAGE SIZING FIXES */
+    #q-image {
+        width: 100%;
+        max-height: 220px;
+        height: auto;
+        object-fit: contain;
+        border-radius: 16px;
+        margin-bottom: 18px;
+        display: none;
+        background: #f0f0f0;
+    }
+
+    button {
+        padding: 14px 24px;
+        margin: 6px 0;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 50px;
+        border: none;
+        transition: all 0.2s ease;
+        min-height: 48px; /* Mobile touch friendly size */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
+    }
+
+    button:active {
+        transform: scale(0.98);
+    }
+
+    .level-btn { 
+        background: var(--primary); 
+        color: white; 
+        width: 100%; 
+        max-width: 300px; 
+        display: block; 
+        margin: 12px auto; 
+        box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+    }
+    .level-btn:hover { background: #5a52d5; transform: translateY(-2px); }
+
+    .answer-btn { 
+        background: var(--secondary); 
+        color: white; 
+        width: 100%; 
+        margin-top: 18px; 
+        box-shadow: 0 4px 15px rgba(255, 101, 132, 0.3);
+    }
+    .answer-btn:hover { background: #e05572; }
+
+    .next-btn { background: var(--success); color: white; flex: 1; }
+    .home-btn { background: #dfe6e9; color: #2d3436; flex: 1; }
+
+    .control-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-top: 20px;
+        gap: 12px;
+    }
+
+    #statement {
+        font-size: clamp(15px, 4vw, 18px);
+        line-height: 1.6;
+        color: #2d3436;
+        text-align: left;
+        background: #f8fafc;
+        padding: 18px 20px;
+        border-left: 5px solid var(--primary);
+        border-radius: 12px;
+        min-height: 120px;
+    }
+
+    #result {
+        font-size: clamp(22px, 5vw, 28px);
+        margin-top: 15px;
+        color: var(--primary);
+        font-weight: 800;
+        text-align: center;
+    }
+
+    #explanation {
+        font-size: clamp(14px, 3.5vw, 16px);
+        line-height: 1.5;
+        color: #636e72;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    #progress {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(8px);
+        color: #94a3b8;
+        text-align: center;
+        padding: 8px 12px;
+        font-size: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 100;
+    }
+
+    .footer a {
+        color: #38bdf8;
+        text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
+        #container {
+            padding: 20px 16px;
+            border-radius: 20px;
+        }
+
+        .control-row {
+            flex-direction: column;
+        }
+
+        .control-row button {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<audio id="revealSound" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
+<audio id="nextSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+
+<div id="container">
+    <div id="progress">Ready to start?</div>
+    <h1>TRUE OR FALSE?</h1>
+    
+    <div id="home">
+        <h2>Choose a difficulty level to begin the exercise.</h2>
+        <button class="level-btn" onclick="startGame('easy')">Level 1: Basic</button>
+        <button class="level-btn" onclick="startGame('advanced')">Level 2: Academic</button>
+    </div>
+
+    <div id="game" style="display:none;">
+        <img id="q-image" src="" alt="Context Image">
+        <div id="statement"></div>
+
+        <button class="answer-btn" id="show-btn" onclick="showAnswer()">REVEAL ANSWER</button>
+
+        <div id="answer-area">
+            <div id="result"></div>
+            <div id="explanation"></div>
+        </div>
+
+        <div class="control-row">
+            <button class="next-btn" onclick="nextStatement()">Next Statement ➔</button>
+            <button class="home-btn" onclick="goHome()">🏠 Menu</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentLevel = "";
+let index = 0;
+
+const statements = {
+    easy: [
+        {
+            text: `Many people think that goldfish are not very smart. They believe these small fish can only remember things for three seconds. However, this is not true at all. In many science tests, goldfish showed they can remember things for many months. They can even learn to recognize their owners and remember when it is time to eat. These fish are much smarter than the old stories say[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The text says goldfish can remember things for months, not just three seconds[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `When you think of a desert, you probably think of a very hot place with a lot of yellow sand and bright sun. But a desert is actually defined by how much rain or snow falls there. Because it is so dry and receives almost no rain, Antarctica is technically a desert. In fact, it is the largest desert in the world, even though it is covered in ice[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Antarctica is the largest desert because it is the driest place on Earth[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Bats are very interesting animals that fly at night. Because they move around in the dark, many people think that bats are blind. This is a mistake. Bats actually have eyes that work very well. While they use sound to find tiny insects to eat, they also use their vision to see things that are far away. They can see much better than humans when the light is low[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The text states that bats have eyes that work well and can see better than humans in low light[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1587455989280-1cef2509a39a?q=80&w=1171&auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The planet Venus is a very strange place in our solar system. It spins around very slowly on its axis. Because it takes so long to spin, one day on Venus lasts about 243 Earth days. However, it only takes 225 Earth days for Venus to go all the way around the Sun. This means that a single day on this planet is actually longer than a whole year there[cite: 3].`,
+            answer: "TRUE",
+            explanation: `One day is 243 Earth days, while a year is only 225 Earth days[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1614313913007-2b4ae8ce32d6?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Our bodies change a lot as we grow from babies into adults. One of the most surprising changes is what happens to our skeletons. Babies are born with about 270 bones. As a child grows up, many of these small bones fuse together to make bigger, stronger bones. By the time a person becomes an adult, they only have 206 bones left in their entire body[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The statement says adults have more bones, but the text says babies have 270 and adults have 206[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Sunflowers are famous for being bright and yellow, but they are also very busy plants. Young sunflowers follow the sun as it moves across the sky from east to west. This special movement is called heliotropism. Once the sunflower becomes an adult and gets heavy with seeds, it usually stops moving and stays facing east to stay warm and attract bees in the early morning[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Young sunflowers move to follow the sun across the sky during the day[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1470472304068-4398a9daab00?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Many people enjoy eating chocolate, and for a long time, people thought it was just a modern candy. However, chocolate has a very long history. The ancient Maya and Aztec people in Central America were drinking chocolate thousands of years ago. They didn't have sugar, so their chocolate drink was very bitter and spicy. They even used cocoa beans as a type of money to buy things[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Ancient civilizations like the Maya drank chocolate and used beans as currency[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Elephants are the largest animals that live on land, and they have some very special abilities. One thing they cannot do, however, is jump. Because their bones are all pointing downwards and they are extremely heavy, they cannot lift all four feet off the ground at the same time. They are the only mammal in the world that is physically unable to jump, even though they can run[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Elephants are the only mammals that cannot jump because of their weight and bone structure[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The Great Wall of China is a massive structure that stretches for thousands of miles. A common story says that you can see it from the moon with your own eyes. However, astronauts have said this is not true. The wall is very long, but it is also very narrow and the color matches the mountains. It is very hard to see even from a low satellite without a camera[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The text says you cannot see the wall from the moon with the naked eye[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Ostrich birds are famous for being the fastest birds on land. They are also very large and cannot fly. There is a famous story that says when an ostrich is scared, it buries its head in the sand to hide. This is actually a myth. They don't bury their heads; they actually lay their heads flat on the ground to look like a rock or a bush when they are in danger[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The text explains that burying their heads in the sand is a myth; they just lay low[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1551717743-49959800b1f6?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The Statue of Liberty is a famous green monument in New York. However, it was not always green. When the statue was first built and given to the United States by France, it was a bright, shiny brown color because it was made of copper. Over many years, the air and the rain caused a chemical change. This created a thin green layer called a patina that now covers the whole statue[cite: 3].`,
+            answer: "TRUE",
+            explanation: `It was originally brown but turned green because of the copper's reaction to weather[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1523453086938-1647493a3889?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Sharks are often seen as scary hunters, but they have some very strange traits. For example, sharks do not have any bones in their bodies. Instead, their entire skeleton is made of a material called cartilage. This is the same soft, flexible material that is inside your ears and the tip of your nose. This light skeleton helps sharks swim very fast and move easily through the deep ocean water[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Sharks have skeletons made of flexible cartilage instead of hard bone[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1560273074-c930c70e4e65?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Mount Everest is known as the tallest mountain in the world. It is part of the Himalayas and thousands of people try to climb it every year. Because the mountain is so high, the weather at the top is always freezing cold. Even though it is so tall, it is actually still growing. The tectonic plates under the earth are slowly pushing the mountain up about 4 millimeters every single year[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Everest is still growing taller every year due to tectonic movement[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Bulls are famous for getting very angry when they see a matador waving a red cape. Many people believe that the color red makes the bull mad. However, science shows that bulls are actually color-blind to red. They don't care about the color at all. What actually makes them angry is the way the matador moves the cape around. They are reacting to the movement, not the specific color[cite: 3].`,
+            answer: "FALSE",
+            explanation: `Bulls are color-blind to red; they react to the movement of the fabric instead[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1504109586057-7a2ae83d1338?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Cows are very social animals and they like to spend time together in large groups. Scientists have discovered that cows actually have 'best friends' within their herds. When they are separated from their favorite friend, they can become very stressed and their heart rate goes up. They feel much more relaxed and happy when they are standing next to the other cows that they know and like the best[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Cows have preferred companions and experience stress when they are separated from them[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=800"
+        }
+    ],
+    advanced: [
+        {
+            text: `The iconic Eiffel Tower, now the quintessential symbol of Paris, was initially conceived as a temporary exhibit for the 1889 Exposition Universelle. It faced intense opposition from the French artistic community, who viewed it as a 'monstrous' iron structure that threatened the city's architectural elegance. However, Gustave Eiffel secured its survival by demonstrating its utility as a wireless telegraph transmitter, effectively transforming an unwanted eyesore into a vital military and scientific asset[cite: 3].`,
+            answer: "TRUE",
+            explanation: `The tower was meant to be dismantled but was saved by its usefulness for radio transmissions[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The prevailing narrative surrounding the Amazon Rainforest often characterizes it as the 'lungs of the planet,' responsible for generating 20% of the world's oxygen supply. While the Amazon is undeniably critical for global biodiversity and carbon sequestration, this specific oxygen statistic is scientifically inaccurate. In reality, the rainforest consumes nearly all the oxygen it produces through its own respiration and the decomposition of organic matter, leaving the ocean's phytoplankton as our primary source[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The Amazon consumes most of the oxygen it produces; most global oxygen comes from marine phytoplankton[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The biological complexity of the octopus is a subject of intense fascination within the scientific community. Unlike most vertebrates, an octopus possesses three distinct hearts and blood that is copper-based and blue in color. Furthermore, its nervous system is decentralized; two-thirds of its neurons are located in its arms rather than its head. This allows each arm to act independently, tasting, touching, and moving without direct instructions from the central brain[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Octopuses have blue blood, three hearts, and a decentralized nervous system in their arms[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1545671913-b89ac1b4ac10?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Traditional history books often credit Christopher Columbus with being the first European to reach the Americas in 1492. However, archaeological evidence found at L'Anse aux Meadows in Newfoundland proves that Norse explorers, led by Leif Erikson, established a settlement there nearly 500 years earlier. Despite this, Columbus remains the more famous figure because his voyages led to permanent, large-scale contact between Europe and the American continents, altering the course of world history[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Leif Erikson and the Vikings reached North America long before Columbus did[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1520038410233-7141be7e6f97?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `A frequent misconception in biology is that sharks are incapable of stopping because they lack the ability to pump water over their gills manually. While it is true that 'obligate ram ventilators' like the Great White must move to breathe, many other species utilize 'buccal pumping.' These sharks use oral muscles to actively pull water into their mouths and over their gills, allowing them to remain perfectly stationary on the sea floor for extended periods[cite: 3].`,
+            answer: "FALSE",
+            explanation: `Only some shark species must swim to breathe; many can pump water while resting[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1560273074-c930c70e4e65?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The concept of 'alpha' wolves, who lead through aggression and dominance, was popularized by studies of captive wolves in the 1940s. However, modern research on wild wolf packs has largely debunked this theory. In their natural habitat, wolf packs function more like human families, where the leaders are simply the parents of the other pack members. Leadership is based on guidance and cooperation rather than winning violent battles for power within the group[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Modern science shows wolf packs are family units, not hierarchies based on 'alpha' dominance[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1590424753058-32431ee66eb1?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Although the Diamond is famously marketed as the rarest and most precious gemstone, its perceived scarcity is largely a result of clever marketing and controlled supply. Chemically, diamonds are merely highly organized structures of carbon, which is one of the most abundant elements on Earth. In contrast, gemstones like Red Beryl or Musgravite are significantly rarer in nature, with only a handful of specimens existing worldwide, making them far more valuable to collectors[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Diamonds are common carbon structures; their 'rarity' is a marketing illusion compared to truly rare stones[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Marie Curie is often celebrated as the first person to win two Nobel Prizes, but she is also unique for another reason. She remains the only individual to ever receive Nobel Prizes in two different scientific fields: Physics and Chemistry. Her pioneering research on radioactivity, a term she coined herself, laid the groundwork for modern nuclear physics. Despite her immense contributions, she was never elected to the French Academy of Sciences because she was a woman[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Curie won in two different sciences (Physics and Chemistry), a feat no one else has matched[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1532187875605-186c6af8405c?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Modern aviation relies heavily on the 'Black Box' flight recorder to investigate the causes of airplane accidents. Curiously, despite its name, the device is never actually black. These recorders are painted a bright, fluorescent shade of orange. This color choice is intentional, as it makes the device much easier to locate among the wreckage or on the ocean floor following a crash. They are built to withstand extreme heat and pressure[cite: 3].`,
+            answer: "FALSE",
+            explanation: `The 'Black Box' is actually bright orange so it can be found easily after a crash[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Honey is one of the few foods that truly never expires. Archeologists exploring ancient Egyptian tombs have discovered pots of honey that are over 3,000 years old and, remarkably, are still perfectly edible. The longevity of honey is due to its unique chemical composition; it has very low moisture content and a naturally acidic pH, which creates an environment where bacteria and microorganisms simply cannot survive or grow[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Honey's low moisture and acidity keep it from spoiling for thousands of years[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `While the Great Pyramid of Giza is the most famous pyramid in the world, Egypt is not the country with the highest number of these structures. That title belongs to Sudan, Egypt's neighbor to the south. Sudan contains over 200 pyramids, nearly double the amount found in Egypt. These pyramids were built by the rulers of the ancient Kingdom of Kush and are generally smaller and steeper than the Egyptian versions[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Sudan has over 200 pyramids, which is more than the roughly 138 found in Egypt[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1571746779417-640166c3c437?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Many people believe that glass is a very slow-moving liquid rather than a solid. This idea came from observing that old windows in medieval cathedrals are thicker at the bottom than at the top. However, physicists have confirmed that glass is an amorphous solid. The uneven thickness of old windows was actually caused by the manufacturing process used at the time, which made it impossible to create perfectly flat sheets of glass[cite: 3].`,
+            answer: "FALSE",
+            explanation: `Glass is a solid; the thickness in old windows was a result of how they were made, not liquid flow[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1533154683836-84ea7a0bc310?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Standard maps of the world, such as the Mercator projection, are highly misleading regarding the actual size of landmasses. Because the map is a flat representation of a sphere, countries far from the equator appear much larger than they truly are. For instance, Greenland often looks as large as Africa on a map. In reality, Africa is actually fourteen times larger than Greenland, containing enough land to fit the United States, China, and India combined[cite: 3].`,
+            answer: "TRUE",
+            explanation: `Map projections distort sizes; Africa is much larger than it appears on a standard map[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `The shortest war in history took place in 1896 between the United Kingdom and the Sultanate of Zanzibar. The conflict broke out after the death of the pro-British Sultan and the immediate rise of a successor the British did not approve of. The war lasted between 38 and 45 minutes before a ceasefire was called. Despite its short duration, over 500 people were killed or wounded during the heavy British naval bombardment[cite: 3].`,
+            answer: "TRUE",
+            explanation: `The Anglo-Zanzibar war is the shortest recorded war, lasting less than an hour[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1540910419892-f0c6833f2a7c?auto=format&fit=crop&w=800"
+        },
+        {
+            text: `Napoleon Bonaparte, the famous French Emperor, is historically remembered as being exceptionally short, leading to the term 'Napoleon Complex' to describe small men who act aggressively. However, at the time of his death, he was measured at 5 feet 2 inches in French units. When converted to modern English measurements, he was actually 5 feet 7 inches tall. This was slightly above the average height for a Frenchman during the early 19th century[cite: 3].`,
+            answer: "FALSE",
+            explanation: `Napoleon was of average height; the myth of his shortness came from a difference in measurement systems[cite: 3].`,
+            img: "https://images.unsplash.com/photo-1563291074-2bf8677ac0e5?auto=format&fit=crop&w=800"
+        }
+    ]
+};
+
+function startGame(level) {
+    currentLevel = level;
+    index = 0;
+    document.getElementById("home").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    document.getElementById("q-image").style.display = "block";
+    loadStatement();
+}
+
+function loadStatement() {
+    const s = statements[currentLevel][index];
+    document.getElementById("progress").innerText = `Question ${index + 1} of ${statements[currentLevel].length}`;
+    document.getElementById("statement").innerText = s.text;
+    document.getElementById("q-image").src = s.img;
+    document.getElementById("result").innerText = "";
+    document.getElementById("explanation").innerText = "";
+    document.getElementById("show-btn").style.display = "inline-flex";
+}
+
+function showAnswer() {
+    const s = statements[currentLevel][index];
+    document.getElementById("result").innerText = s.answer;
+    document.getElementById("explanation").innerText = s.explanation;
+    document.getElementById("show-btn").style.display = "none";
+    
+    const revealSound = document.getElementById("revealSound");
+    revealSound.currentTime = 0;
+    revealSound.play().catch(e => console.log('Audio play blocked:', e));
+}
+
+function nextStatement() {
+    const nextSound = document.getElementById("nextSound");
+    nextSound.currentTime = 0;
+    nextSound.play().catch(e => console.log('Audio play blocked:', e));
+    
+    index++;
+    if (index >= statements[currentLevel].length) {
+        document.getElementById("progress").innerText = "Success!";
+        document.getElementById("statement").innerText = "You have reached the end of the level. Excellent reading comprehension today!";
+        document.getElementById("q-image").style.display = "none";
+        document.getElementById("result").innerText = "🏁 Done!";
+        document.getElementById("explanation").innerText = "";
+        document.getElementById("show-btn").style.display = "none";
+        return;
+    }
+    loadStatement();
+}
+
+function goHome() {
+    location.href = 'index.html';
+}
+</script>
+
+<footer class="footer">
+  © 2026 James Wynne • 
+  <a href="mailto:jiwynne72@gmail.com">Email</a> • 
+  <a href="https://jwynne.wixsite.com/english" target="_blank">Website</a>
+</footer>
+</body>
+</html>
