@@ -7,15 +7,17 @@
     <link rel="manifest" href="manifest.json">
     <style>
         :root {
-            --bg: #0f172a;
+            --bg-grad: radial-gradient(circle at 10% 20%, #1e1b4b 0%, #0f172a 90%);
             --accent: #6366f1;
-            --glass: rgba(255, 255, 255, 0.08);
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.12);
             --text: #f8fafc;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            background: var(--bg-grad);
             color: var(--text);
             margin: 0;
             display: flex;
@@ -23,20 +25,68 @@
             align-items: center;
             min-height: 100vh;
             padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Decorative glowing background elements */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: rgba(6, 214, 160, 0.15);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: rgba(99, 102, 241, 0.15);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: clamp(2rem, 5vw, 3rem);
             margin: 0 0 10px 0;
             text-transform: uppercase;
             letter-spacing: 3px;
-            background: linear-gradient(to right, #06d6a0, #6366f1);
+            background: linear-gradient(135deg, #06d6a0 0%, #3b82f6 50%, #6366f1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center;
+            filter: drop-shadow(0 2px 10px rgba(6, 214, 160, 0.2));
         }
 
-        .subtitle { color: #94a3b8; margin-bottom: 40px; font-weight: 300; text-align: center; }
+        .tagline {
+            background: rgba(6, 214, 160, 0.1);
+            color: #06d6a0;
+            border: 1px solid rgba(6, 214, 160, 0.3);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .subtitle { 
+            color: #94a3b8; 
+            margin-bottom: 35px; 
+            font-weight: 400; 
+            text-align: center; 
+            font-size: 1.1rem;
+        }
 
         .grid {
             display: grid;
@@ -48,38 +98,73 @@
 
         .card {
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 28px;
+            border-radius: 20px;
             text-decoration: none;
             color: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #06d6a0;
+            opacity: 0.6;
+            transition: opacity 0.3s;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            background: rgba(255,255,255,0.12);
-            border-color: var(--accent);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transform: translateY(-6px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(6, 214, 160, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(6, 214, 160, 0.1);
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card h3 { 
-            margin: 0 0 12px 0; 
-            color: #06d6a0; 
-            font-size: 1.4rem;
+            margin: 0 0 10px 0; 
+            color: #ffffff; 
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card h3::after {
+            content: '→';
+            color: #06d6a0;
+            font-size: 1.2rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover h3::after {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         .card p { 
             margin: 0; 
             font-size: 0.95rem; 
             color: #cbd5e1; 
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .footer { 
@@ -92,7 +177,7 @@
         }
 
         .footer a {
-            color: #6366f1;
+            color: #38bdf8;
             text-decoration: none;
             font-weight: 500;
         }
@@ -104,24 +189,35 @@
         #installBtn {
             display: none;
             margin-bottom: 25px;
-            padding: 12px 24px;
-            background: #6366f1;
+            padding: 12px 26px;
+            background: linear-gradient(135deg, #06d6a0, #059669);
             border: none;
-            color: white;
+            color: #0f172a;
             border-radius: 50px;
             cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(6, 214, 160, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #installBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(6, 214, 160, 0.6);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 20px 15px; }
+            .card { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
     <h1>Classroom Clash</h1>
-    <p class="Ready...Set...Quiz!!</p>
-    <p class="subtitle">Select a game to start</p>
+    <div class="tagline">Ready, Steady, Quiz! 🧠✨</div>
+    <p class="subtitle">Thinking caps on! Select a game to start.</p>
     
-    <button id="installBtn">Install App</button>
+    <button id="installBtn">📲 Install App</button>
 
     <div class="grid">
         <a href="GRAMMAR GAME.html" class="card">
