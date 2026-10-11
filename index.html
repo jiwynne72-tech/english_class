@@ -96,6 +96,7 @@
             gap: 20px;
             width: 100%;
             max-width: 1100px;
+            margin-bottom: 40px;
         }
 
         .card {
@@ -169,9 +170,37 @@
             line-height: 1.5;
         }
 
+        /* WhatsApp Button Section at the Bottom of Cards */
+        .whatsapp-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #25d366;
+            color: #ffffff;
+            padding: 12px 26px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .whatsapp-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+
         .footer { 
             margin-top: auto; 
-            padding: 40px 20px 20px; 
+            padding: 20px; 
             font-size: 0.9rem; 
             color: #64748b; 
             text-align: center;
@@ -219,7 +248,7 @@
     <div class="tagline">Ready, Steady, Quiz! 🧠✨</div>
     
     <p class="subtitle">
-        <strong>Thinking caps on!</strong> Select a game to start<br>
+        <strong>Thinking caps on!</strong> Select a game to start.<br>
         <em><small>Fun and educational games to boost your English skills</small></em>
     </p>
 
@@ -294,6 +323,13 @@
             --card-hover-bg: linear-gradient(135deg, rgba(159, 18, 57, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
             <h3>True or False?</h3>
             <p>Test reading comprehension with real-world facts and myths.</p>
+        </a>
+    </div>
+
+    <!-- WhatsApp Button right below the cards -->
+    <div class="whatsapp-section">
+        <a href="https://wa.me/393515316723" target="_blank" class="whatsapp-btn">
+            💬 Chat with me on WhatsApp
         </a>
     </div>
 
