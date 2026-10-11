@@ -1,7 +1,7 @@
 {
   "name": "Time to Quiz: English Games",
-  "short_name": "CLASSROOM ENGLISH GAMES",
-  "description": "Interactive English games: Have fun learning.",
+  "short_name": "ENGLISH QUIZ CENTRAL",
+  "description": "Master English, One Game at a Time",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f2027",
