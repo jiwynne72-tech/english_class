@@ -41,11 +41,35 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         animation: fadeIn 0.4s ease-out;
         margin-bottom: 40px;
+        position: relative;
     }
 
     @keyframes fadeIn {
         from { opacity: 0; transform: scale(0.97); }
         to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Sound Toggle Switch */
+    .sound-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .sound-toggle:hover {
+        background: #e2e8f0;
     }
 
     h1 { 
@@ -207,6 +231,7 @@
 <audio id="nextSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
 
 <div id="container">
+    <button id="soundToggle" class="sound-toggle" onclick="toggleSound()">🔊 Sound: ON</button>
     <div id="progress">Ready to start?</div>
     <h1>TRUE OR FALSE?</h1>
     
@@ -239,6 +264,17 @@
 let currentLevel = "";
 let index = 0;
 let activeStatements = [];
+let soundEnabled = true;
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById("soundToggle");
+    if (soundEnabled) {
+        btn.innerHTML = "🔊 Sound: ON";
+    } else {
+        btn.innerHTML = "🔇 Sound: OFF";
+    }
+}
 
 const statements = {
     easy: [
@@ -293,7 +329,7 @@ const statements = {
         {
             text: `The Great Wall of China is a massive structure that stretches for thousands of miles. A common story says that you can see it from the moon with your own eyes. However, astronauts have said this is not true. The wall is very long, but it is also very narrow and the color matches the mountains. It is very hard to see even from a low satellite without a camera.`,
             answer: "FALSE",
-            explanation: `The text says you cannot see the wall from the moon with the naked eye.`,
+            explanation: `The text says you can see the wall from the moon with the naked eye.`,
             img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=800"
         },
         {
@@ -453,7 +489,7 @@ function loadStatement() {
     
     const imgEl = document.getElementById("q-image");
     imgEl.style.display = "block";
-    imgEl.src = s.img; // If this fails to load, onerror will automatically swap it to 'dunno.jpg'
+    imgEl.src = s.img;
 
     document.getElementById("result").innerText = "";
     document.getElementById("explanation").innerText = "";
@@ -466,15 +502,19 @@ function showAnswer() {
     document.getElementById("explanation").innerText = s.explanation;
     document.getElementById("show-btn").style.display = "none";
     
-    const revealSound = document.getElementById("revealSound");
-    revealSound.currentTime = 0;
-    revealSound.play().catch(e => console.log('Audio play blocked:', e));
+    if (soundEnabled) {
+        const revealSound = document.getElementById("revealSound");
+        revealSound.currentTime = 0;
+        revealSound.play().catch(e => console.log('Audio play blocked:', e));
+    }
 }
 
 function nextStatement() {
-    const nextSound = document.getElementById("nextSound");
-    nextSound.currentTime = 0;
-    nextSound.play().catch(e => console.log('Audio play blocked:', e));
+    if (soundEnabled) {
+        const nextSound = document.getElementById("nextSound");
+        nextSound.currentTime = 0;
+        nextSound.play().catch(e => console.log('Audio play blocked:', e));
+    }
     
     index++;
     if (index >= activeStatements.length) {
