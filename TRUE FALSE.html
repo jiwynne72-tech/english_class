@@ -40,7 +40,7 @@
         border-radius: 24px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         animation: fadeIn 0.4s ease-out;
-        margin-bottom: 40px;
+        margin-bottom: 20px;
         position: relative;
     }
 
@@ -51,25 +51,23 @@
 
     /* Sound Toggle Switch */
     .sound-toggle {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: #f1f5f9;
-        border: 1px solid #cbd5e1;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
-        padding: 6px 12px;
+        padding: 8px 16px;
         font-size: 13px;
         font-weight: 600;
-        color: #475569;
+        color: #f1f5f9;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
         transition: all 0.2s ease;
+        margin-bottom: 40px;
     }
 
     .sound-toggle:hover {
-        background: #e2e8f0;
+        background: rgba(255, 255, 255, 0.2);
     }
 
     h1 { 
@@ -231,7 +229,6 @@
 <audio id="nextSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
 
 <div id="container">
-    <button id="soundToggle" class="sound-toggle" onclick="toggleSound()">🔊 Sound: ON</button>
     <div id="progress">Ready to start?</div>
     <h1>TRUE OR FALSE?</h1>
     
@@ -259,6 +256,8 @@
         </div>
     </div>
 </div>
+
+<button id="soundToggle" class="sound-toggle" onclick="toggleSound()">🔊 Sound: ON</button>
 
 <script>
 let currentLevel = "";
@@ -536,8 +535,8 @@ function goHome() {
 
 <footer class="footer">
   © 2026 James Wynne • 
-  <a href="mailto:jiwynne72@gmail.com">email</a> • 
-  <a href="https://jwynne.wixsite.com/english" target="_blank">website</a>
+  <a href="mailto:jiwynne72@gmail.com">Email</a> • 
+  <a href="https://jwynne.wixsite.com/english" target="_blank">Website</a>
 </footer>
 </body>
 </html>
