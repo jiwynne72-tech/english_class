@@ -148,6 +148,32 @@
         gap: 12px;
     }
 
+    .statement-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .tts-btn {
+        background: #e2e8f0;
+        color: #1e293b;
+        border: none;
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: background 0.2s;
+    }
+
+    .tts-btn:hover {
+        background: #cbd5e1;
+    }
+
     #statement {
         font-size: clamp(15px, 4vw, 18px);
         line-height: 1.6;
@@ -241,6 +267,11 @@
     <div id="game" style="display:none;">
         <!-- Fallback image triggers if any source fails to load -->
         <img id="q-image" src="" onerror="this.src='dunno.jpg'" alt="Context Image">
+        
+        <div class="statement-header">
+            <span style="font-weight: 600; font-size: 14px; color: #64748b;">Statement:</span>
+            <button class="tts-btn" onclick="speakText()">🗣️ Read Aloud</button>
+        </div>
         <div id="statement"></div>
 
         <button class="answer-btn" id="show-btn" onclick="showAnswer()">REVEAL ANSWER</button>
@@ -272,7 +303,23 @@ function toggleSound() {
         btn.innerHTML = "🔊 Sound: ON";
     } else {
         btn.innerHTML = "🔇 Sound: OFF";
+        window.speechSynthesis.cancel(); // Stop any ongoing speech if muted
     }
+}
+
+// Text-to-Speech Helper Function
+function speakText(textOverride) {
+    if (!soundEnabled) return;
+    
+    // Cancel any ongoing speech utterance
+    window.speechSynthesis.cancel();
+
+    const textToSpeak = textOverride || activeStatements[index].text;
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.rate = 1.0; // Normal speed
+    utterance.pitch = 1.0;
+    
+    window.speechSynthesis.speak(utterance);
 }
 
 const statements = {
@@ -454,7 +501,7 @@ const statements = {
             img: "https://images.unsplash.com/photo-1540910419892-f0c6833f2a7c?auto=format&fit=crop&w=800"
         },
         {
-            text: `Napoleon Bonaparte, the famous French Emperor, is historically remembered as being exceptionally short, leading to the term 'Napoleon Complex' to describe small men who act aggressively. However, at the time of his death, he was measured at 5 feet 2 inches in French units. When converted to modern English measurements, he was actually 5 feet 7 inches tall. This was slightly above the average height for a Frenchman during the early 19th century.`,
+            text: `Napoleon Bonaparte, the famous French Emperor, is historically remembered as being exceptionally short, leading to the term 'Napoleon Complex' to describe small men who act aggressively. Button, however, at the time of his death, he was measured at 5 feet 2 inches in French units. When converted to modern English measurements, he was actually 5 feet 7 inches tall. This was slightly above the average height for a Frenchman during the early 19th century.`,
             answer: "FALSE",
             explanation: `Napoleon was of average height; the myth of his shortness came from a difference in measurement systems.`,
             img: "https://images.unsplash.com/photo-1563291074-2bf8677ac0e5?auto=format&fit=crop&w=800"
@@ -493,6 +540,9 @@ function loadStatement() {
     document.getElementById("result").innerText = "";
     document.getElementById("explanation").innerText = "";
     document.getElementById("show-btn").style.display = "inline-flex";
+
+    // Automatically read the text out loud when a new statement loads (if sound is on)
+    speakText(s.text);
 }
 
 function showAnswer() {
@@ -509,6 +559,8 @@ function showAnswer() {
 }
 
 function nextStatement() {
+    window.speechSynthesis.cancel(); // Stop any reading in progress
+    
     if (soundEnabled) {
         const nextSound = document.getElementById("nextSound");
         nextSound.currentTime = 0;
@@ -529,6 +581,7 @@ function nextStatement() {
 }
 
 function goHome() {
+    window.speechSynthesis.cancel();
     location.href = 'index.html';
 }
 </script>
