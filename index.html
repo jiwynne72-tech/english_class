@@ -7,9 +7,10 @@
     <link rel="manifest" href="manifest.json">
     <style>
         :root {
-            --bg-grad: radial-gradient(circle at 10% 20%, #1e1b4b 0%, #0f172a 90%);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --text: #f8fafc;
+            --bg-grad: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-border: rgba(255, 255, 255, 0.8);
         }
 
         * {
@@ -19,7 +20,7 @@
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-grad);
-            color: var(--text);
+            color: var(--text-main);
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -30,91 +31,98 @@
             position: relative;
         }
 
-        /* Decorative glowing background elements */
+        /* Ambient background glow elements */
         body::before {
             content: '';
             position: absolute;
-            top: -100px;
+            top: -120px;
             left: -100px;
-            width: 300px;
-            height: 300px;
-            background: rgba(56, 189, 248, 0.12);
+            width: 350px;
+            height: 350px;
+            background: rgba(56, 189, 248, 0.15);
             border-radius: 50%;
-            filter: blur(80px);
+            filter: blur(90px);
             z-index: -1;
         }
 
         body::after {
             content: '';
             position: absolute;
-            bottom: -100px;
+            bottom: -120px;
             right: -100px;
-            width: 300px;
-            height: 300px;
-            background: rgba(129, 140, 248, 0.12);
+            width: 350px;
+            height: 350px;
+            background: rgba(129, 140, 248, 0.15);
             border-radius: 50%;
-            filter: blur(80px);
+            filter: blur(90px);
             z-index: -1;
         }
 
         h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
+            font-size: clamp(2rem, 5vw, 2.75rem);
             margin: 0 0 10px 0;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center;
+            font-weight: 800;
         }
 
         .tagline {
-            background: rgba(56, 189, 248, 0.1);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 6px 16px;
+            background: #ffffff;
+            color: #0284c7;
+            border: 1px solid rgba(2, 132, 199, 0.2);
+            padding: 6px 18px;
             border-radius: 50px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
         .subtitle { 
-            color: #94a3b8; 
+            color: var(--text-muted); 
             margin-bottom: 35px; 
             font-weight: 400; 
             text-align: center; 
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             line-height: 1.5;
+        }
+
+        .subtitle strong {
+            color: #0f172a;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            gap: 22px;
             width: 100%;
             max-width: 1100px;
             margin-bottom: 40px;
         }
 
         .card {
-            background: var(--card-bg, rgba(255, 255, 255, 0.05));
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            padding: 28px;
-            border-radius: 20px;
+            background: var(--card-bg, #ffffff);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border-color, rgba(226, 232, 240, 0.8));
+            padding: 26px;
+            border-radius: 18px;
             text-decoration: none;
-            color: white;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-main);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
             display: flex;
             flex-direction: column;
             justify-content: center;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         }
 
         .card::before {
@@ -122,18 +130,18 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 4px;
+            width: 5px;
             height: 100%;
-            background: var(--card-accent, #38bdf8);
-            opacity: 0.8;
+            background: var(--card-accent, #0284c7);
+            opacity: 0.85;
             transition: opacity 0.3s;
         }
 
         .card:hover {
-            transform: translateY(-6px);
-            background: var(--card-hover-bg, rgba(255, 255, 255, 0.1));
-            border-color: var(--card-accent, rgba(56, 189, 248, 0.5));
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 25px var(--card-glow, rgba(56, 189, 248, 0.2));
+            transform: translateY(-5px);
+            background: var(--card-hover-bg, #ffffff);
+            border-color: var(--card-accent, #0284c7);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 18px var(--card-glow, rgba(2, 132, 199, 0.15));
         }
 
         .card:hover::before {
@@ -141,9 +149,10 @@
         }
 
         .card h3 { 
-            margin: 0 0 10px 0; 
-            color: #ffffff; 
-            font-size: 1.35rem;
+            margin: 0 0 8px 0; 
+            color: #0f172a; 
+            font-size: 1.25rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -151,10 +160,10 @@
 
         .card h3::after {
             content: '→';
-            color: var(--card-accent, #38bdf8);
+            color: var(--card-accent, #0284c7);
             font-size: 1.2rem;
             opacity: 0;
-            transform: translateX(-10px);
+            transform: translateX(-8px);
             transition: all 0.3s ease;
         }
 
@@ -166,15 +175,15 @@
         .card p { 
             margin: 0; 
             font-size: 0.95rem; 
-            color: #cbd5e1; 
+            color: #475569; 
             line-height: 1.5;
         }
 
-        /* WhatsApp Button Section at the Bottom of Cards */
+        /* WhatsApp Button Section */
         .whatsapp-section {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             width: 100%;
         }
 
@@ -184,33 +193,42 @@
             gap: 10px;
             background: #25d366;
             color: #ffffff;
-            padding: 12px 26px;
+            padding: 12px 28px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 700;
             font-size: 0.95rem;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .whatsapp-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
         }
 
         .footer { 
             margin-top: auto; 
-            padding: 20px; 
+            padding: 24px 20px; 
             font-size: 0.9rem; 
             color: #64748b; 
             text-align: center;
             line-height: 1.6;
         }
 
+        .footer img {
+            height: 28px;
+            width: auto;
+            vertical-align: middle;
+            margin-bottom: 8px;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
         .footer a {
-            color: #38bdf8;
+            color: #0284c7;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .footer a:hover {
@@ -221,24 +239,24 @@
             display: none;
             margin-bottom: 25px;
             padding: 12px 26px;
-            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            background: linear-gradient(135deg, #0284c7, #2563eb);
             border: none;
-            color: #0f172a;
+            color: #ffffff;
             border-radius: 50px;
             cursor: pointer;
             font-weight: 700;
-            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 4px 16px rgba(2, 132, 199, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
         #installBtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 25px rgba(56, 189, 248, 0.6);
+            transform: scale(1.04);
+            box-shadow: 0 6px 22px rgba(2, 132, 199, 0.45);
         }
 
         @media (max-width: 600px) {
-            body { padding: 20px 15px; }
-            .card { padding: 20px; }
+            body { padding: 25px 15px; }
+            .card { padding: 22px; }
         }
     </style>
 </head>
@@ -255,72 +273,79 @@
     <button id="installBtn">📲 Install App</button>
 
     <div class="grid">
-        <!-- Card 1: Deep Sky Blue Gradient -->
+        <!-- Card 1: Soft Sky Blue -->
         <a href="GRAMMAR GAME.html" class="card" style="
-            --card-accent: #38bdf8; 
-            --card-glow: rgba(56, 189, 248, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(14, 116, 144, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(14, 116, 144, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #0284c7; 
+            --card-glow: rgba(2, 132, 199, 0.12);
+            --card-border-color: rgba(186, 230, 253, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);">
             <h3>The Grammar Center</h3>
             <p>Master prepositions, conditionals, and advanced adverbs.</p>
         </a>
         
-        <!-- Card 2: Deep Indigo Gradient -->
+        <!-- Card 2: Soft Indigo -->
         <a href="THE ENGLISH WALL.html" class="card" style="
-            --card-accent: #818cf8; 
-            --card-glow: rgba(129, 140, 248, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(67, 56, 202, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(67, 56, 202, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #4f46e5; 
+            --card-glow: rgba(79, 70, 229, 0.12);
+            --card-border-color: rgba(199, 210, 254, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #eeefee 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);">
             <h3>The English Wall</h3>
             <p>Connect the related words before time runs out.</p>
         </a>
         
-        <!-- Card 3: Deep Purple Gradient -->
+        <!-- Card 3: Soft Purple -->
         <a href="WHO AM I HISTORY.html" class="card" style="
-            --card-accent: #c084fc; 
-            --card-glow: rgba(192, 132, 252, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(107, 33, 168, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(107, 33, 168, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #9333ea; 
+            --card-glow: rgba(147, 51, 234, 0.12);
+            --card-border-color: rgba(233, 213, 255, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%);">
             <h3>Who Am I? (History)</h3>
             <p>Identify famous figures from historical clues.</p>
         </a>
         
-        <!-- Card 4: Deep Teal Gradient -->
+        <!-- Card 4: Soft Teal -->
         <a href="WHO AM I CELEBS.html" class="card" style="
-            --card-accent: #2dd4bf; 
-            --card-glow: rgba(45, 212, 191, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(15, 118, 110, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(15, 118, 110, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #0d9488; 
+            --card-glow: rgba(13, 148, 136, 0.12);
+            --card-border-color: rgba(153, 246, 228, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #ccfbf1 100%);">
             <h3>Do You Know Me? (Celebs)</h3>
             <p>Guess the celebrity from their bio and career hints.</p>
         </a>
         
-        <!-- Card 5: Deep Emerald Gradient -->
+        <!-- Card 5: Soft Emerald -->
         <a href="CORRECTION CENTER.html" class="card" style="
-            --card-accent: #34d399; 
-            --card-glow: rgba(52, 211, 153, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(6, 95, 70, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(6, 95, 70, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #059669; 
+            --card-glow: rgba(5, 150, 105, 0.12);
+            --card-border-color: rgba(167, 243, 208, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%);">
             <h3>Correction Center</h3>
             <p>Spot the grammar errors and factual mistakes.</p>
         </a>
         
-        <!-- Card 6: Deep Amber Gradient -->
+        <!-- Card 6: Soft Amber -->
         <a href="WHAT HAPPENED HERE.html" class="card" style="
-            --card-accent: #fbbf24; 
-            --card-glow: rgba(251, 191, 36, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(146, 64, 14, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(146, 64, 14, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #d97706; 
+            --card-glow: rgba(217, 119, 6, 0.12);
+            --card-border-color: rgba(253, 230, 138, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);">
             <h3>What Happened Here?</h3>
             <p>Analyze and resolve complex sentence errors.</p>
         </a>
         
-        <!-- Card 7: Deep Rose Gradient -->
+        <!-- Card 7: Soft Rose -->
         <a href="TRUE FALSE.html" class="card" style="
-            --card-accent: #fb7185; 
-            --card-glow: rgba(251, 113, 133, 0.25);
-            --card-bg: linear-gradient(135deg, rgba(159, 18, 57, 0.22) 0%, rgba(15, 23, 42, 0.6) 100%);
-            --card-hover-bg: linear-gradient(135deg, rgba(159, 18, 57, 0.35) 0%, rgba(15, 23, 42, 0.7) 100%);">
+            --card-accent: #e11d48; 
+            --card-glow: rgba(225, 29, 72, 0.12);
+            --card-border-color: rgba(254, 205, 211, 0.8);
+            --card-bg: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+            --card-hover-bg: linear-gradient(135deg, #ffffff 0%, #ffe4e6 100%);">
             <h3>True or False?</h3>
             <p>Test reading comprehension with real-world facts and myths.</p>
         </a>
@@ -333,15 +358,15 @@
         </a>
     </div>
 
-        <footer class="footer">
-  <img src="logo.png" alt="JW Linguistics & Writing" style="height: 30px; vertical-align: middle; margin-bottom: 8px; border-radius: 50%;">
-  <div>© 2026 James Wynne</div>
-  <div style="margin-top: 5px;">
-    <a href="https://jwynne.wixsite.com/english" target="_blank">website</a> •
-    <a href="mailto:james_wynne@hotmail.com">email</a> •
-    <a href="https://wa.me/393515316723" target="_blank">whatsapp</a>
-  </div>
-</footer>
+    <footer class="footer">
+      <img src="logo.png" alt="JW Linguistics & Writing">
+      <div>© 2026 James Wynne</div>
+      <div style="margin-top: 5px;">
+        <a href="https://jwynne.wixsite.com/english" target="_blank">website</a> •
+        <a href="mailto:james_wynne@hotmail.com">email</a> •
+        <a href="https://wa.me/393515316723" target="_blank">whatsapp</a>
+      </div>
+    </footer>
 
     <script>
         if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
